@@ -9,7 +9,7 @@ import {
 import { historicoPrecos } from "../data/mockData";
 
 export const ChartCard = ({ selectedCity }: { selectedCity: string }) => (
-  <div className="w-full md:w-1/3 p-4 bg-white shadow-xl">
+  <div className="w-full p-4 bg-white shadow-xl">
     <h2 className="text-xl font-bold mb-4">
       Histórico de Preços - {selectedCity}
     </h2>

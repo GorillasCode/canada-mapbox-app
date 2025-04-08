@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { mockData } from "../data/mockData";
-import { ChartCard } from "./ChartCard";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN!;
 
@@ -41,6 +40,20 @@ export const CanadaRealEstateMap = () => {
           )
           .addTo(map);
       });
+      map.addSource("provinces", {
+        type: "geojson",
+        data: "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/CAN.geo.json"
+      });
+
+      map.addLayer({
+        id: "province-borders",
+        type: "line",
+        source: "provinces",
+        paint: {
+          "line-color": "#007BFF",
+          "line-width": 2
+        }
+      });
     });
 
     return () => map.remove();
@@ -48,8 +61,7 @@ export const CanadaRealEstateMap = () => {
 
   return (
     <div className="flex flex-col md:flex-row w-full h-screen">
-      <div ref={mapContainer} className="w-full md:w-2/3 h-1/2 md:h-full" />
-      <ChartCard selectedCity={selectedCity} />
+      <div ref={mapContainer} className="w-full  h-1/2 md:h-full" />
     </div>
   );
 };
