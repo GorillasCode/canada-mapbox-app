@@ -11,10 +11,14 @@ import TranslateIcon from "@mui/icons-material/Translate";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import SearchIcon from "@mui/icons-material/Search";
 
-export const mockData = [
-  { nome: "Toronto", preco_medio: 850000 },
-  { nome: "Vancouver", preco_medio: 950000 },
-  { nome: "Montreal", preco_medio: 600000 }
+export const mockData: {
+  nome: string;
+  preco_medio: number;
+  coords: [number, number];
+}[] = [
+  { nome: "Toronto", preco_medio: 850000, coords: [-79.3832, 43.6532] },
+  { nome: "Vancouver", preco_medio: 950000, coords: [-123.1207, 49.2827] },
+  { nome: "Montreal", preco_medio: 600000, coords: [-73.5673, 45.5017] }
 ];
 
 export const historicoPrecos = [

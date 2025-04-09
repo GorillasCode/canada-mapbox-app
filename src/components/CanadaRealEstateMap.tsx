@@ -19,18 +19,7 @@ export const CanadaRealEstateMap = () => {
     map.on("load", () => {
       mockData.forEach(city => {
         new mapboxgl.Marker()
-          .setLngLat([
-            city.nome === "Toronto"
-              ? -79.3832
-              : city.nome === "Vancouver"
-              ? -123.1207
-              : -73.5673,
-            city.nome === "Toronto"
-              ? 43.6532
-              : city.nome === "Vancouver"
-              ? 49.2827
-              : 45.5017
-          ])
+          .setLngLat(city.coords)
           .setPopup(
             new mapboxgl.Popup({ offset: 25 }).setHTML(
               `<h3>${
@@ -42,7 +31,7 @@ export const CanadaRealEstateMap = () => {
       });
       map.addSource("provinces", {
         type: "geojson",
-        data: "https://raw.githubusercontent.com/johan/world.geo.json/master/countries/CAN.geo.json"
+        data: "/geo/canada_provinces.json"
       });
 
       map.addLayer({
