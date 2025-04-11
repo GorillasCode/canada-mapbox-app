@@ -1,0 +1,201 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-56.0278, 53.1355]
+        },
+        "properties": {
+          "province": "Newfoundland and Labrador",
+          "population": 510550,
+          "median_income": 71500,
+          "population_density": 1.4,
+          "median_age": 48.4,
+          "home_ownership_rate": 75.7
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-63.0000, 46.2500]
+        },
+        "properties": {
+          "province": "Prince Edward Island",
+          "population": 154331,
+          "median_income": 73500,
+          "population_density": 27.2,
+          "median_age": 42.0,
+          "home_ownership_rate": 68.8
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-63.0000, 45.0000]
+        },
+        "properties": {
+          "province": "Nova Scotia",
+          "population": 969383,
+          "median_income": 71000,
+          "population_density": 18.4,
+          "median_age": 45.6,
+          "home_ownership_rate": 66.8
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-66.159668, 46.49839]
+        },
+        "properties": {
+          "province": "New Brunswick",
+          "population": 775610,
+          "median_income": 70000,
+          "population_density": 10.9,
+          "median_age": 45.4,
+          "home_ownership_rate": 73.0
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-71.7500, 52.0000]
+        },
+        "properties": {
+          "province": "Quebec",
+          "population": 8501833,
+          "median_income": 72500,
+          "population_density": 6.5,
+          "median_age": 44.0,
+          "home_ownership_rate": 59.9
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-85.0000, 50.0000]
+        },
+        "properties": {
+          "province": "Ontario",
+          "population": 14223942,
+          "median_income": 91000,
+          "population_density": 15.2,
+          "median_age": 41.8,
+          "home_ownership_rate": 68.4
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-98.0000, 55.0000]
+        },
+        "properties": {
+          "province": "Manitoba",
+          "population": 1342153,
+          "median_income": 80000,
+          "population_density": 2.3,
+          "median_age": 38.4,
+          "home_ownership_rate": 67.4
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-106.0000, 55.0000]
+        },
+        "properties": {
+          "province": "Saskatchewan",
+          "population": 1132505,
+          "median_income": 82000,
+          "population_density": 2.0,
+          "median_age": 38.8,
+          "home_ownership_rate": 70.7
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-115.0000, 55.0000]
+        },
+        "properties": {
+          "province": "Alberta",
+          "population": 4262635,
+          "median_income": 96000,
+          "population_density": 6.7,
+          "median_age": 38.4,
+          "home_ownership_rate": 70.9
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-124.0000, 53.7267]
+        },
+        "properties": {
+          "province": "British Columbia",
+          "population": 5000879,
+          "median_income": 85000,
+          "population_density": 5.4,
+          "median_age": 41.1,
+          "home_ownership_rate": 66.8
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-135.0000, 64.0000]
+        },
+        "properties": {
+          "province": "Yukon",
+          "population": 40232,
+          "median_income": 100000,
+          "population_density": 0.08,
+          "median_age": 39.1,
+          "home_ownership_rate": 64.4
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-120.0000, 64.0000]
+        },
+        "properties": {
+          "province": "Northwest Territories",
+          "population": 41070,
+          "median_income": 126000,
+          "population_density": 0.04,
+          "median_age": 35.0,
+          "home_ownership_rate": 53.5
+        }
+      },
+      {
+        "type": "Feature",
+        "geometry": {
+          "type": "MultiPolygon",
+          "coordinates": [-96.0000, 70.0000]
+        },
+        "properties": {
+          "province": "Nunavut",
+          "population": 36858,
+          "median_income": 118000,
+          "population_density": 0.02,
+          "median_age": 27.3,
+          "home_ownership_rate": 19.2
+        }
+      }
+    ]
+  }
+  

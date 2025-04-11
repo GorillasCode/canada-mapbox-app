@@ -35,6 +35,16 @@ export const CanadaRealEstateMap = () => {
       });
 
       map.addLayer({
+        id: "province-fill",
+        type: "fill",
+        source: "provinces",
+        paint: {
+          "fill-color": "#088",
+          "fill-opacity": 0.3
+        }
+      });
+
+      map.addLayer({
         id: "province-borders",
         type: "line",
         source: "provinces",
@@ -42,6 +52,22 @@ export const CanadaRealEstateMap = () => {
           "line-color": "#007BFF",
           "line-width": 2
         }
+      });
+
+      map.on("mousemove", "province-fill", e => {
+        map.getCanvas().style.cursor = "pointer";
+
+        map.setPaintProperty("province-fill", "fill-color", [
+          "case",
+          ["==", ["get", "name"], e.features?.[0]?.properties?.name],
+          "#f00",
+          "#088"
+        ]);
+      });
+
+      map.on("mouseleave", "province-fill", () => {
+        map.getCanvas().style.cursor = "";
+        map.setPaintProperty("province-fill", "fill-color", "#088");
       });
     });
 
