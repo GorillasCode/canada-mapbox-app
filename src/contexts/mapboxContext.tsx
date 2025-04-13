@@ -25,6 +25,7 @@ export interface DemographicData {
   avgHouseholdSize: number;
   feeIndex: string;
   searchIndex: string;
+  province: string;
 } 
 
 const MapboxContext = createContext<MapboxContextType | undefined>(undefined);
@@ -43,7 +44,8 @@ export const MapboxProvider = ({ children }: { children: ReactNode }) => {
     growth: 0,
     avgHouseholdSize: 0,
     feeIndex: "$",
-    searchIndex: "●○○○○"
+    searchIndex: "●○○○○",
+    province: ''
   });
   const [center, setCenter] = useState<[number, number]>([-46.63, -23.55]); 
   const token = process.env.REACT_APP_MAPBOX_TOKEN!;

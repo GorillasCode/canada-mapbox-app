@@ -1,31 +1,8 @@
 import { useEffect, useRef } from "react";
-import { DemographicData, useMapbox } from "../../contexts/mapboxContext";
+import { useMapbox } from "../../contexts/mapboxContext";
 import geojsonData from "../../geojson/canada_dentists.geojson";
-import statistics from "../../geojson/canada_statistics.json";
 import mapboxgl from "mapbox-gl";
 import { Card, CardContent } from "../ui/card";
-
-
-const statisticsData: DemographicData[] = statistics;
-
-async function fetchDemographicsByCoordinates() {
-  const props = statisticsData[0];
-
-  return {
-    population: props.population,
-    income: props.income,
-    medianAge: props.medianAge,
-    saturation: props.saturation,
-    practicesNearby: props.practicesNearby,
-    employees: props.employees,
-    homeOwnership: props.homeOwnership,
-    englishSpeaking: props.englishSpeaking,
-    growth: props.growth,
-    avgHouseholdSize: props.avgHouseholdSize,
-    feeIndex: props.feeIndex,
-    searchIndex: props.searchIndex,
-  };
-}
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -45,13 +22,7 @@ export function MapViewComponent() {
 
     setMap(mapInstance);
 
-    const updateDemographics = async () => {
-      const data = await fetchDemographicsByCoordinates();
-      if (data) setDemographicData(data);
-    };
-
     mapInstance.on("load", () => {
-      updateDemographics();
       mapInstance.addSource("my-geojson", {
         type: "geojson",
         data: geojsonData,
