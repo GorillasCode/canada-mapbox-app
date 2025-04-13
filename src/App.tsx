@@ -6,9 +6,9 @@ import './App.css';
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const mockData = [
-  { nome: 'Toronto', preco_medio: 850000 },
-  { nome: 'Vancouver', preco_medio: 950000 },
-  { nome: 'Montreal', preco_medio: 600000 },
+  { nome: 'Toronto', preco_medio: 850000, especialidade: 'Orthodontics',  coordinates: [-79.3832, 43.6532] as [number, number] },
+  { nome: 'Vancouver', preco_medio: 950000, especialidade: 'Periodontics', coordinates: [-123.1207, 49.2827] as [number, number] },
+  { nome: 'Montreal', preco_medio: 600000, especialidade: 'Pediatric Dentistry',  coordinates: [-73.5673, 45.5017] as [number, number] },
 ];
 
 const historicoPrecos = [
@@ -37,6 +37,8 @@ function CardContent({ children, className }: React.HTMLAttributes<HTMLDivElemen
 const CanadaRealEstateMap = () => {
   const mapContainer = useRef(null);
   const [selectedCity, setSelectedCity] = useState('Toronto');
+  const [selectedSpeciality, setSelectedSpeciality] = useState<string | null>(null);
+
 
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -47,22 +49,26 @@ const CanadaRealEstateMap = () => {
     });
 
     map.on('load', () => {
-      mockData.forEach((city) => {
-        new mapboxgl.Marker()
-          .setLngLat([
-            city.nome === 'Toronto' ? -79.3832 : city.nome === 'Vancouver' ? -123.1207 : -73.5673,
-            city.nome === 'Toronto' ? 43.6532 : city.nome === 'Vancouver' ? 49.2827 : 45.5017,
-          ])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 25 })
-              .setHTML(`<h3>${city.nome}</h3><p>Preço médio: $${city.preco_medio.toLocaleString()}</p>`)
-          )
-          .addTo(map);
-      });
-    });
+      const filteredData = selectedSpeciality
+      ? mockData.filter((city) => city.especialidade === selectedSpeciality)
+      : mockData;
 
-    return () => map.remove();
-  }, []);
+    filteredData.forEach((city) => {
+      new mapboxgl.Marker()
+        .setLngLat(city.coordinates)
+        .setPopup(
+          new mapboxgl.Popup({ offset: 25 }).setHTML(`
+            <h3>${city.nome}</h3>
+            <p>Specialty: ${city.especialidade}</p>
+            <p>Average price: $${city.preco_medio.toLocaleString()}</p>
+          `)
+        )
+        .addTo(map);
+    });
+  });
+
+  return () => map.remove();
+}, [selectedSpeciality]);
 
   return (
     <div className="flex flex-col md:flex-row w-full h-screen">
@@ -70,6 +76,23 @@ const CanadaRealEstateMap = () => {
 
       <div className="w-full md:w-1/3 p-4 bg-white shadow-xl">
         <h2 className="text-xl font-bold mb-4">Histórico de Preços - {selectedCity}</h2>
+        <div className="mb-4">
+          <label htmlFor="specialty" className="block font-semibold mb-2">Filter by specialty:</label>
+          <select
+            id="specialty"
+            className="border border-gray-300 rounded-md px-3 py-1 w-full"
+            onChange={(e) => setSelectedSpeciality(e.target.value || null)}
+          >
+            <option value="">All</option>
+            <option value="Orthodontics">Orthodontics</option>
+            <option value="Periodontics">Periodontics</option>
+            <option value="Pediatric Dentistry">Pediatric Dentistry</option>
+            <option value="Endodontics">Endodontics</option>
+            <option value="Prosthodontics">Prosthodontics</option>
+            <option value="Implantology">Implantology</option>
+          </select>
+        </div>
+
         <Card>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -83,7 +106,7 @@ const CanadaRealEstateMap = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </div >
   );
 }
 
