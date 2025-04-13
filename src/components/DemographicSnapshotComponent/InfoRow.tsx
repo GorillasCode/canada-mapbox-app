@@ -11,7 +11,7 @@ export function InfoRow({ icon, label, value }: InfoRowProps) {
     <div className="flex items-center space-x-2 text-sm text-gray-800">
       <span className="text-red-600">{icon}</span>
       <span>
-        <strong>{label}:</strong> {value}
+        <strong className="text-red-600">{label}:</strong> {value}
       </span>
     </div>
   );
