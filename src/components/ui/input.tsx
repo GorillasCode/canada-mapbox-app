@@ -1,11 +1,29 @@
-import React from "react";
-export function Input({ type = "text", ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
-    return (
-      <input
-        type={type}
-        className="border border-gray-300 rounded px-3 py-2 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        {...props}
-      />
-    );
-  }
-  
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import SearchIcon from "@mui/icons-material/Search";
+
+export function SearchInput({
+  type = "text",
+  value,
+  onChange,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <TextField
+      value={value}
+      onChange={onChange}
+      label="Search Address or Location"
+      variant="outlined"
+      fullWidth
+      size="small"
+      placeholder="Ex: Toronto, ON"
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon color="action" />
+          </InputAdornment>
+        )
+      }}
+    />
+  );
+}
