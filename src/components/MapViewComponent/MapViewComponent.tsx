@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
-import { useMapbox } from "../../contexts/context";
+import { useMapbox } from "../../contexts/mapboxContext";
 import mapboxgl from "mapbox-gl";
 import { Card, CardContent } from "../ui/card";
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN!;
 
 export function MapViewComponent() {
     const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -21,8 +20,6 @@ export function MapViewComponent() {
           zoom: 3
         });
 
-    // setMap(map);
-    
         return () => map.remove();
     }, [map, center, token, setMap]);
 
