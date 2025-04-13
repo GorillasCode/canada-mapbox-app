@@ -1,34 +1,36 @@
+import { useState } from "react";
+import { SelectChangeEvent } from "@mui/material";
 import { Card, CardContent } from "../ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-
+import { Select } from "../ui/select";
 
 export function SearchAreaComponent() {
-    return (
-        <Card>
-            <CardContent className="p-4 space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-                <Input placeholder="Enter Address or Location" />
-                <div className="flex items-center gap-2">
-                <label className="text-sm">Radius (miles)</label>
-                <Input type="number" defaultValue={2} className="w-20" />
-                </div>
-                <Select>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select Province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="ON">Ontario</SelectItem>
-                        <SelectItem value="QC">Quebec</SelectItem>
-                        <SelectItem value="BC">British Columbia</SelectItem>
-                        <SelectItem value="AB">Alberta</SelectItem>
-                        {/* Add other provinces */}
-                    </SelectContent>
-                </Select>
-                <Button className="w-full">Search Area</Button>
-            </div>
-            </CardContent>
-        </Card>
-    )
+  const [province, setProvince] = useState("");
+
+  const handleProvinceChange = (e: SelectChangeEvent) => {
+    setProvince(e.target.value);
+  };
+
+  const provinceOptions = [
+    { label: "Ontario", value: "ON" },
+    { label: "Quebec", value: "QC" },
+    { label: "British Columbia", value: "BC" },
+    { label: "Alberta", value: "AB" },
+    { label: "Newfoundland and Labrador", value: "NL" },
+    { label: "Saskatchewan", value: "SK" },
+    { label: "Manitoba", value: "MB" },
+    { label: "Nova Scotia", value: "NS" },
+    { label: "New Brunswick", value: "NB" },
+    { label: "Prince Edward Island", value: "PE" },
+    { label: "Yukon", value: "YT" }
+  ];
+  return (
+    <div className="space-y-4">
+      <Select
+        label="Select Province"
+        value={province}
+        onChange={handleProvinceChange}
+        options={provinceOptions}
+      />
+    </div>
+  );
 }
