@@ -1,37 +1,39 @@
-import React, { useState } from "react";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select as MuiSelect,
+  SelectChangeEvent
+} from "@mui/material";
 
-export function Select({ children }: { children: React.ReactNode }) {
-  return <div className="relative">{children}</div>;
+interface Option {
+  label: string;
+  value: string;
 }
 
-export function SelectTrigger({ children }: { children: React.ReactNode }) {
+interface SelectProps {
+  label: string;
+  value: string;
+  onChange: (event: SelectChangeEvent) => void;
+  options: Option[];
+}
+
+export function Select({ label, value, onChange, options }: SelectProps) {
   return (
-    <button className="w-full border border-gray-300 rounded px-3 py-2 text-left text-sm bg-white">
-      {children}
-    </button>
-  );
-}
-
-export function SelectValue({ placeholder }: { placeholder: string }) {
-  return <span className="text-gray-500">{placeholder}</span>;
-}
-
-export function SelectContent({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="absolute mt-2 w-full border border-gray-300 rounded bg-white shadow z-10">
-      {children}
-    </div>
-  );
-}
-
-export function SelectItem({ value, children }: { value: string; children: React.ReactNode }) {
-  const [selected, setSelected] = useState(false);
-  return (
-    <div
-      className={`px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm ${selected ? "font-semibold" : ""}`}
-      onClick={() => setSelected(true)}
-    >
-      {children}
-    </div>
+    <FormControl fullWidth size="small">
+      <InputLabel id={`${label}-label`}>{label}</InputLabel>
+      <MuiSelect
+        labelId={`${label}-label`}
+        value={value}
+        label={label}
+        onChange={onChange}
+      >
+        {options.map(option => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
+      </MuiSelect>
+    </FormControl>
   );
 }
