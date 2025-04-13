@@ -12,70 +12,73 @@ import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import GroupIcon from "@mui/icons-material/Group";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SearchIcon from "@mui/icons-material/Search";
+import { useMapbox } from "../../contexts/mapboxContext";
 
 export function DemographicSnapshotComponent() {
+  const { demographicData } = useMapbox();
+
   return (
     <Card>
       <CardContent className="p-4 grid grid-cols-2 gap-4 text-sm">
         <InfoRow
           icon={<PeopleIcon fontSize="small" />}
           label="Population"
-          value="105,431"
+          value={demographicData.population.toLocaleString()}
         />
         <InfoRow
           icon={<MonetizationOnIcon fontSize="small" />}
           label="Household Income"
-          value="$108,834"
+          value={demographicData.income.toLocaleString()}
         />
         <InfoRow
           icon={<CalendarTodayIcon fontSize="small" />}
           label="Median Age"
-          value="33.6"
+          value={demographicData.medianAge.toLocaleString()}
         />
         <InfoRow
           icon={<WavesIcon fontSize="small" />}
           label="Saturation"
-          value="1,550"
+          value={demographicData.saturation.toLocaleString()}
         />
         <InfoRow
           icon={<LocalHospitalIcon fontSize="small" />}
           label="Practices Nearby"
-          value="68"
+          value={demographicData.practicesNearby.toLocaleString()}
         />
         <InfoRow
           icon={<WorkIcon fontSize="small" />}
           label="Employees"
-          value="118,479"
+          value={demographicData.employees.toLocaleString()}
         />
         <InfoRow
           icon={<HomeIcon fontSize="small" />}
           label="Home Ownership"
-          value="36.4%"
+          value={demographicData.homeOwnership.toLocaleString() + "%"}
         />
         <InfoRow
           icon={<TranslateIcon fontSize="small" />}
           label="Speaks English"
-          value="72.1%"
+          value={demographicData.englishSpeaking + "%"}
         />
         <InfoRow
           icon={<TrendingUpIcon fontSize="small" />}
           label="Observed Growth"
-          value="+2.8%"
+          value={demographicData.growth + "%"}
         />
         <InfoRow
           icon={<GroupIcon fontSize="small" />}
           label="Avg. Household Size"
-          value="1.83"
+          value={demographicData.avgHouseholdSize.toLocaleString()}
         />
         <InfoRow
           icon={<AttachMoneyIcon fontSize="small" />}
           label="Fee Index"
-          value="$$$$"
+          value={demographicData.feeIndex}
         />
         <InfoRow
           icon={<SearchIcon fontSize="small" />}
           label="Search Index"
-          value="●○○○○"
+          value={demographicData.searchIndex}
         />
       </CardContent>
     </Card>
