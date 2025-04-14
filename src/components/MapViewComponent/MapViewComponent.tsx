@@ -5,14 +5,17 @@ import { useMapbox } from "../../contexts/mapboxContext";
 import geojsonData from "../../geojson/canada_dentists.geojson";
 import jsonPoints from "../../geojson/canada_dentists_points.json";
 import { Card, CardContent } from "../ui/card";
+import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const { token, setDemographicData, setMap, tilesetId, map } = useMapbox();
   const [searchByRadius, setSearchByRadius] = useState(true);
+  const [specialty, setSpeciality] = useState("");
   mapboxgl.accessToken = token;
 
   function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
+    setSpeciality(specialty);
     if (specialty === "Specialty") {
       map.setFilter("my-geojson-layer", null);
     } else {
@@ -39,41 +42,60 @@ export function MapViewComponent() {
     setMap(mapInstance);
 
     mapInstance.on("load", () => {
-      mapInstance.addSource("my-geojson", {
-        type: "geojson",
-        data: geojsonData,
-      });
+      mapInstance.loadImage("/tooth-icon.png", (error, image) => {
+        if (error || !image) {
+          return;
+        }
 
-      mapInstance.addLayer({
-        id: "my-geojson-layer",
-        type: "circle",
-        source: "my-geojson",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#007cbf",
-        },
-      });
-      mapInstance.moveLayer("my-geojson-layer");
+        if (!mapInstance.hasImage("tooth-icon")) {
+          mapInstance.addImage("tooth-icon", image);
+        }
 
-      mapInstance.on("click", "my-geojson-layer", (e) => {
-        const feature = e.features?.[0];
-        if (!feature) return;
+        mapInstance.addSource("my-geojson", {
+          type: "geojson",
+          data: geojsonData,
+        });
 
-        const { geometry, properties = {} } = feature;
+        mapInstance.addLayer({
+          id: "my-geojson-layer",
+          type: "symbol",
+          source: "my-geojson",
+          layout: {
+            "icon-image": "tooth-icon",
+            "icon-size": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              3,
+              0.018,
+              12,
+              0.03,
+            ],
+            "icon-allow-overlap": true,
+          },
+        });
 
-        if (geometry.type === "Point") {
-          let [lng, lat] = geometry.coordinates as [number, number];
+        mapInstance.moveLayer("my-geojson-layer");
 
-          const popupContent = `
+        mapInstance.on("click", "my-geojson-layer", (e) => {
+          const feature = e.features?.[0];
+          if (!feature) return;
+
+          const { geometry, properties = {} } = feature;
+
+          if (geometry.type === "Point") {
+            if (geometry.type === "Point") {
+              let [lng, lat] = geometry.coordinates as [number, number];
+
+              const popupContent = `
               <div style="
                 font-family: sans-serif;
                 font-size: 14px;
                 line-height: 1.4;
                 color: #333;
-                min-width: 200px;
-              ">
+                min-width: 200px;">
                 <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">
-                ${properties?.name || "Unknown Clinic"}
+                  ${properties?.name || "Unknown Clinic"}
                 </div>
                 <div><strong>Type:</strong> ${
                   properties?.healthcare || "N/A"
@@ -86,21 +108,22 @@ export function MapViewComponent() {
                 }
               </div>
             `;
-          const coordinates = geometry.coordinates as [number, number];
 
-          new mapboxgl.Popup()
-            .setLngLat([lng, lat])
-            .setHTML(popupContent.trim())
-            .addTo(mapInstance);
-        }
-      });
+              new mapboxgl.Popup()
+                .setLngLat([lng, lat])
+                .setHTML(popupContent.trim())
+                .addTo(mapInstance);
+            }
+          }
+        });
 
-      mapInstance.on("mouseenter", "my-geojson-layer", () => {
-        mapInstance.getCanvas().style.cursor = "pointer";
-      });
+        mapInstance.on("mouseenter", "my-geojson-layer", () => {
+          mapInstance.getCanvas().style.cursor = "pointer";
+        });
 
-      mapInstance.on("mouseleave", "my-geojson-layer", () => {
-        mapInstance.getCanvas().style.cursor = "";
+        mapInstance.on("mouseleave", "my-geojson-layer", () => {
+          mapInstance.getCanvas().style.cursor = "";
+        });
       });
     });
 
@@ -155,24 +178,28 @@ export function MapViewComponent() {
 
   return (
     <Card>
+      <div className="w-56">
+        <Select
+          options={[
+            { label: "All specialties", value: "Specialty" },
+            { label: "General Dentist", value: "general" },
+            { label: "Denturist", value: "denturist" },
+            { label: "Orthodontics", value: "orthodontics" },
+            { label: "Endodontics", value: "endodontics" },
+            { label: "Dentist", value: "dentist" },
+            { label: "Anaesthetics", value: "anaesthetics" },
+            { label: "Dentistry", value: "dentistry" },
+          ]}
+          value={specialty}
+          label="Specialties"
+          onChange={(e) => applySpecialtyFilter(map!, e.target.value)}
+        ></Select>
+      </div>
       <CardContent className="p-4">
         <div
           ref={mapContainerRef}
           className="w-full h-96 rounded relative"
         ></div>
-        <select
-          onChange={(e) => applySpecialtyFilter(map!, e.target.value)}
-          className="mt-4 p-2 border rounded"
-        >
-          <option value="Specialty">All specialties</option>
-          <option value="general">General Dentist</option>
-          <option value="denturist">Denturist</option>
-          <option value="orthodontics">Orthodontist</option>
-          <option value="endodontics">Endodontist</option>
-          <option value="dentist">Dentist</option>
-          <option value="anaesthetics">Anaesthetics</option>
-          <option value="dentistry">Dentistry</option>
-        </select>
       </CardContent>
     </Card>
   );
