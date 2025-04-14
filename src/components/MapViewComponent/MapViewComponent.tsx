@@ -178,7 +178,7 @@ export function MapViewComponent() {
 
   return (
     <Card>
-      <div className="w-56">
+      <div className="w-56 p-4">
         <Select
           options={[
             { label: "All specialties", value: "Specialty" },
