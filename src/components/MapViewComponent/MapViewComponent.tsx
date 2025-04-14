@@ -11,6 +11,7 @@ export function MapViewComponent() {
   mapboxgl.accessToken = token;
 
   useEffect(() => {
+    
     if (!mapContainerRef.current) return;
 
     const mapInstance = new mapboxgl.Map({
@@ -37,6 +38,53 @@ export function MapViewComponent() {
           "circle-color": "#007cbf",
         },
       });
+      mapInstance.moveLayer("my-geojson-layer");
+      
+      mapInstance.on("click", "my-geojson-layer", (e) => {
+        const feature = e.features?.[0];
+        if (!feature) return;
+        
+          const { geometry, properties = {} } = feature;
+
+          if (geometry.type === "Point") {
+            let [lng, lat] = geometry.coordinates as [number, number];
+
+            const popupContent = `
+              <div style="
+                font-family: sans-serif;
+                font-size: 14px;
+                line-height: 1.4;
+                color: #333;
+                min-width: 200px;
+              ">
+                <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">
+                ${properties?.name || "Unknown Clinic"}
+                </div>
+                <div><strong>Type:</strong> ${properties?.healthcare || "N/A"}</div>
+                <div><strong>ID:</strong> ${properties?.osm_id || "N/A"}</div>
+                ${
+                  properties?.website
+                    ? `<div style="margin-top: 4px;"><a href="${properties.website}" target="_blank" rel="noopener noreferrer" style="color: #1a73e8; text-decoration: none;">Website</a></div>`
+                    : ""
+                }
+              </div>
+            `;
+            const coordinates = geometry.coordinates as [number, number];
+
+            new mapboxgl.Popup()
+              .setLngLat([lng, lat])
+              .setHTML(popupContent.trim())
+              .addTo(mapInstance);
+          }
+      });
+
+      mapInstance.on("mouseenter", "my-geojson-layer", () => {
+        mapInstance.getCanvas().style.cursor = "pointer";
+      });
+
+      mapInstance.on("mouseleave", "my-geojson-layer", () => {
+        mapInstance.getCanvas().style.cursor = "";
+      });
     });
 
     return () => mapInstance.remove();
@@ -46,7 +94,7 @@ export function MapViewComponent() {
       <CardContent className="p-4">
         <div
           ref={mapContainerRef}
-          className="bg-gray-200 h-96 rounded flex items-center justify-center text-gray-500"
+          className="w-full h-96 rounded relative"
         ></div>
       </CardContent>
     </Card>
