@@ -1,6 +1,5 @@
 {
 "type": "FeatureCollection",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "name": "Kingsway Dental Centre", "name:en": null, "amenity": "dentist", "building": null, "healthcare": "dentist", "healthcare:speciality": null, "operator:type": null, "capacity:persons": null, "addr:full": null, "addr:city": null, "source": null, "name:fr": null, "osm_id": 9722652668, "osm_type": "nodes" }, "geometry": { "type": "Point", "coordinates": [ -113.5049286, 53.5609819 ] } },
 { "type": "Feature", "properties": { "name": "Vegreville Family Dental", "name:en": null, "amenity": "dentist", "building": null, "healthcare": "dentist", "healthcare:speciality": null, "operator:type": null, "capacity:persons": null, "addr:full": null, "addr:city": null, "source": null, "name:fr": null, "osm_id": 6713316202, "osm_type": "nodes" }, "geometry": { "type": "Point", "coordinates": [ -112.0788037, 53.5022343 ] } },
