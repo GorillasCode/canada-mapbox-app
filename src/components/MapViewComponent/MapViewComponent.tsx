@@ -11,7 +11,6 @@ export function MapViewComponent() {
   mapboxgl.accessToken = token;
 
   useEffect(() => {
-    
     if (!mapContainerRef.current) return;
 
     const mapInstance = new mapboxgl.Map({
@@ -24,30 +23,48 @@ export function MapViewComponent() {
     setMap(mapInstance);
 
     mapInstance.on("load", () => {
-      mapInstance.addSource("my-geojson", {
-        type: "geojson",
-        data: geojsonData,
-      });
+      mapInstance.loadImage("/tooth-icon.png", (error, image) => {
+        if (error || !image) {
+          console.error("Erro ao carregar o ícone:", error);
+          return;
+        }
 
-      mapInstance.addLayer({
-        id: "my-geojson-layer",
-        type: "circle",
-        source: "my-geojson",
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#007cbf",
-        },
-      });
-      mapInstance.moveLayer("my-geojson-layer");
-      
-      mapInstance.on("click", "my-geojson-layer", (e) => {
-        const feature = e.features?.[0];
-        if (!feature) return;
-        
+        if (!mapInstance.hasImage("tooth-icon")) {
+          mapInstance.addImage("tooth-icon", image);
+        }
+
+        mapInstance.addSource("my-geojson", {
+          type: "geojson",
+          data: geojsonData,
+        });
+
+        mapInstance.addLayer({
+          id: "my-geojson-layer",
+          type: "symbol",
+          source: "my-geojson",
+          layout: {
+            "icon-image": "tooth-icon",
+            "icon-size": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              3, 0.018,    
+              12, 0.03
+            ],
+            "icon-allow-overlap": true,
+          },
+        });
+
+        mapInstance.moveLayer("my-geojson-layer");
+
+        mapInstance.on("click", "my-geojson-layer", (e) => {
+          const feature = e.features?.[0];
+          if (!feature) return;
+
           const { geometry, properties = {} } = feature;
 
           if (geometry.type === "Point") {
-            let [lng, lat] = geometry.coordinates as [number, number];
+            const [lng, lat] = geometry.coordinates as [number, number];
 
             const popupContent = `
               <div style="
@@ -55,10 +72,9 @@ export function MapViewComponent() {
                 font-size: 14px;
                 line-height: 1.4;
                 color: #333;
-                min-width: 200px;
-              ">
+                min-width: 200px;">
                 <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">
-                ${properties?.name || "Unknown Clinic"}
+                  ${properties?.name || "Unknown Clinic"}
                 </div>
                 <div><strong>Type:</strong> ${properties?.healthcare || "N/A"}</div>
                 <div><strong>ID:</strong> ${properties?.osm_id || "N/A"}</div>
@@ -69,26 +85,29 @@ export function MapViewComponent() {
                 }
               </div>
             `;
-            const coordinates = geometry.coordinates as [number, number];
 
             new mapboxgl.Popup()
               .setLngLat([lng, lat])
               .setHTML(popupContent.trim())
               .addTo(mapInstance);
           }
-      });
+        });
 
-      mapInstance.on("mouseenter", "my-geojson-layer", () => {
-        mapInstance.getCanvas().style.cursor = "pointer";
-      });
+        mapInstance.on("mouseenter", "my-geojson-layer", () => {
+          mapInstance.getCanvas().style.cursor = "pointer";
+        });
 
-      mapInstance.on("mouseleave", "my-geojson-layer", () => {
-        mapInstance.getCanvas().style.cursor = "";
+        mapInstance.on("mouseleave", "my-geojson-layer", () => {
+          mapInstance.getCanvas().style.cursor = "";
+        });
       });
     });
 
-    return () => mapInstance.remove();
+    return () => {
+      mapInstance.remove();
+    };
   }, [token, tilesetId, setDemographicData, setMap]);
+
   return (
     <Card>
       <CardContent className="p-4">
