@@ -5,12 +5,29 @@ import { useMapbox } from "../../contexts/mapboxContext";
 import geojsonData from "../../geojson/canada_dentists.geojson";
 import jsonPoints from "../../geojson/canada_dentists_points.json";
 import { Card, CardContent } from "../ui/card";
+import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { token, setDemographicData, setMap, tilesetId } = useMapbox();
+  const { token, setDemographicData, setMap, tilesetId, map } = useMapbox();
   const [searchByRadius, setSearchByRadius] = useState(true);
+  const [specialty, setSpeciality] = useState("");
   mapboxgl.accessToken = token;
+
+  function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
+    setSpeciality(specialty);
+    if (specialty === "Specialty") {
+      map.setFilter("my-geojson-layer", null);
+    } else {
+      map.setFilter("my-geojson-layer", [
+        "==",
+        ["get", "healthcare:speciality"],
+        specialty.toLocaleLowerCase(),
+      ]);
+    }
+  }
+
+  const mapRef = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -49,8 +66,10 @@ export function MapViewComponent() {
               "interpolate",
               ["linear"],
               ["zoom"],
-              3, 0.018,    
-              12, 0.03
+              3,
+              0.018,
+              12,
+              0.03,
             ],
             "icon-allow-overlap": true,
           },
@@ -65,9 +84,10 @@ export function MapViewComponent() {
           const { geometry, properties = {} } = feature;
 
           if (geometry.type === "Point") {
-            const [lng, lat] = geometry.coordinates as [number, number];
+            if (geometry.type === "Point") {
+              let [lng, lat] = geometry.coordinates as [number, number];
 
-            const popupContent = `
+              const popupContent = `
               <div style="
                 font-family: sans-serif;
                 font-size: 14px;
@@ -77,7 +97,9 @@ export function MapViewComponent() {
                 <div style="font-weight: bold; font-size: 15px; margin-bottom: 4px;">
                   ${properties?.name || "Unknown Clinic"}
                 </div>
-                <div><strong>Type:</strong> ${properties?.healthcare || "N/A"}</div>
+                <div><strong>Type:</strong> ${
+                  properties?.healthcare || "N/A"
+                }</div>
                 <div><strong>ID:</strong> ${properties?.osm_id || "N/A"}</div>
                 ${
                   properties?.website
@@ -87,10 +109,11 @@ export function MapViewComponent() {
               </div>
             `;
 
-            new mapboxgl.Popup()
-              .setLngLat([lng, lat])
-              .setHTML(popupContent.trim())
-              .addTo(mapInstance);
+              new mapboxgl.Popup()
+                .setLngLat([lng, lat])
+                .setHTML(popupContent.trim())
+                .addTo(mapInstance);
+            }
           }
         });
 
@@ -105,35 +128,38 @@ export function MapViewComponent() {
     });
 
     if (searchByRadius) {
-      mapInstance.on('click', (e) => {
+      mapInstance.on("click", (e) => {
         const center = [e.lngLat.lng, e.lngLat.lat];
         const radiusInMiles = 100;
 
         // Cria um círculo (buffer) em torno do ponto clicado
         const circle = turf.circle(center, radiusInMiles, {
           steps: 64,
-          units: 'miles'
+          units: "miles",
         });
 
         // Atualiza ou adiciona a layer do círculo
-        if (mapInstance.getSource('circle')) {
-          (mapInstance?.getSource('circle') as mapboxgl.GeoJSONSource)?.setData(circle);
+        if (mapInstance.getSource("circle")) {
+          (mapInstance?.getSource("circle") as mapboxgl.GeoJSONSource)?.setData(
+            circle
+          );
         } else {
-          mapInstance.addSource('circle', {
-            type: 'geojson',
-            data: circle
+          mapInstance.addSource("circle", {
+            type: "geojson",
+            data: circle,
           });
 
           mapInstance.addLayer({
-            id: 'circle-layer',
-            type: 'fill',
-            source: 'circle',
+            id: "circle-layer",
+            type: "fill",
+            source: "circle",
             paint: {
-              'fill-color': '#ff0000',
-              'fill-opacity': 0.2
-            }
+              "fill-color": "#ff0000",
+              "fill-opacity": 0.2,
+            },
           });
         }
+        mapRef.current = mapInstance;
 
         const points = turf.points(jsonPoints.points);
 
@@ -141,16 +167,34 @@ export function MapViewComponent() {
         const pointsWithin = turf.pointsWithinPolygon(points, circle);
 
         // Atualiza os pontos no mapa com os que estão dentro do raio
-        (mapInstance.getSource('my-geojson') as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
+        (
+          mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource
+        )?.setData(pointsWithin);
       });
     }
 
     return () => mapInstance.remove();
   }, [token, tilesetId, setDemographicData, setMap, searchByRadius]);
 
-
   return (
     <Card>
+      <div className="w-56 p-4">
+        <Select
+          options={[
+            { label: "All specialties", value: "Specialty" },
+            { label: "General Dentist", value: "general" },
+            { label: "Denturist", value: "denturist" },
+            { label: "Orthodontics", value: "orthodontics" },
+            { label: "Endodontics", value: "endodontics" },
+            { label: "Dentist", value: "dentist" },
+            { label: "Anaesthetics", value: "anaesthetics" },
+            { label: "Dentistry", value: "dentistry" },
+          ]}
+          value={specialty}
+          label="Specialties"
+          onChange={(e) => applySpecialtyFilter(map!, e.target.value)}
+        ></Select>
+      </div>
       <CardContent className="p-4">
         <div
           ref={mapContainerRef}
