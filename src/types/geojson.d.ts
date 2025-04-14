@@ -1,4 +1,4 @@
 declare module "*.geojson" {
-  const value: GeoJSON.GeoJSON;
+  const value: FeatureCollection<Point | MultiPoint, GeoJsonProperties>;
   export default value;
 }
