@@ -2,14 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import './App.css';
-import SpecialtyFilterCard from './components/FiltroEspecialidade';
+import SpecialtyFilterDropdown from './components/FiltroEspecialidade';
+import './components/FiltroEspecialidade.css';
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN;
 
 const mockData = [
-  { nome: 'Toronto', preco_medio: 850000, especialidade: 'Orthodontics', coordinates: [-79.3832, 43.6532] as [number, number] },
-  { nome: 'Vancouver', preco_medio: 950000, especialidade: 'Periodontics', coordinates: [-123.1207, 49.2827] as [number, number] },
-  { nome: 'Montreal', preco_medio: 600000, especialidade: 'Pediatric Dentistry', coordinates: [-73.5673, 45.5017] as [number, number] },
+  { nome: 'Toronto', preco_medio: 850000, especialidade: 'Orthodontist', coordinates: [-79.3832, 43.6532] as [number, number] },
+  { nome: 'Vancouver', preco_medio: 950000, especialidade: 'Periodontist', coordinates: [-123.1207, 49.2827] as [number, number] },
+  { nome: 'Montreal', preco_medio: 600000, especialidade: 'Pediatric Dentist', coordinates: [-73.5673, 45.5017] as [number, number] },
 ];
 
 const historicoPrecos = [
@@ -38,7 +39,7 @@ function CardContent({ children, className }: React.HTMLAttributes<HTMLDivElemen
 const CanadaRealEstateMap = () => {
   const mapContainer = useRef(null);
   const [selectedCity, setSelectedCity] = useState('Toronto');
-  const [selectedSpeciality, setSelectedSpeciality] = useState<string | null>(null);
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string[]>([]);
 
 
   useEffect(() => {
@@ -50,13 +51,13 @@ const CanadaRealEstateMap = () => {
     });
 
     map.on('load', () => {
-      const filteredData = selectedSpeciality
-        ? mockData.filter((city) => city.especialidade === selectedSpeciality)
+      const filteredData = selectedSpecialty.length > 0
+        ? mockData.filter((city) => selectedSpecialty.includes(city.especialidade))
         : mockData;
-    
+
       filteredData.forEach((city, index) => {
         new mapboxgl.Marker({
-          color: selectedSpeciality ? '#ff4d4d' : '#3fb1ce',
+          color: selectedSpecialty.length > 0 ? '#ff4d4d' : '#3fb1ce',
         })
           .setLngLat(city.coordinates)
           .setPopup(
@@ -67,8 +68,8 @@ const CanadaRealEstateMap = () => {
             `)
           )
           .addTo(map);
-    
-        if (index === 0 && selectedSpeciality) {
+
+        if (index === 0 && selectedSpecialty.length > 0) {
           map.flyTo({
             center: city.coordinates,
             zoom: 10,
@@ -79,12 +80,21 @@ const CanadaRealEstateMap = () => {
         }
       });
     })
-    return () => map.remove(); 
-  }, [selectedSpeciality]);
+    return () => map.remove();
+  }, [selectedSpecialty]);
 
   return (
     <div className="flex flex-col md:flex-row w-full h-screen">
-      <div ref={mapContainer} className="w-full md:w-2/3 h-1/2 md:h-full" />
+      <div className="relative w-full md:w-2/3 h-1/2 md:h-full">
+        <div ref={mapContainer} className="w-full h-full" />
+
+        <div className="absolute top-4 left-4 z-10">
+          <SpecialtyFilterDropdown
+            selected={selectedSpecialty}
+            onChange={setSelectedSpecialty}
+          />
+        </div>
+      </div>
 
       <div className="w-full md:w-1/3 p-4 bg-white shadow-xl">
         <h2 className="text-xl font-bold mb-4">Histórico de Preços - {selectedCity}</h2>
@@ -100,8 +110,6 @@ const CanadaRealEstateMap = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <h2 className="text-xl font-bold mb-4 mt-6">Filter by specialty </h2>
-          <SpecialtyFilterCard onSelect={setSelectedSpeciality}/>
       </div>
     </div>
   );
