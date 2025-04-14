@@ -25,7 +25,6 @@ export function MapViewComponent() {
     mapInstance.on("load", () => {
       mapInstance.loadImage("/tooth-icon.png", (error, image) => {
         if (error || !image) {
-          console.error("Erro ao carregar o ícone:", error);
           return;
         }
 
