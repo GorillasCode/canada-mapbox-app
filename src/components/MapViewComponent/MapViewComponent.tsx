@@ -12,8 +12,23 @@ export function MapViewComponent() {
   const [searchByRadius, setSearchByRadius] = useState(true);
   mapboxgl.accessToken = token;
 
+  function applySpecialtyFilter(specialty: string) {
+    const map = mapRef.current;
+    if (!map) return;
+  //aplica filtro para exibir somente os pontos da respectiva especialidade 
+    if (specialty === "Specialty") {
+      map.setFilter("my-geojson-layer", null);
+    } else {
+      map.setFilter("my-geojson-layer", ["==", ["get", "healthcare"], specialty]);
+    }
+  }
+  
+
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+
+
   useEffect(() => {
-    
+
     if (!mapContainerRef.current) return;
 
     const mapInstance = new mapboxgl.Map({
@@ -41,17 +56,17 @@ export function MapViewComponent() {
         },
       });
       mapInstance.moveLayer("my-geojson-layer");
-      
+
       mapInstance.on("click", "my-geojson-layer", (e) => {
         const feature = e.features?.[0];
         if (!feature) return;
-        
-          const { geometry, properties = {} } = feature;
 
-          if (geometry.type === "Point") {
-            let [lng, lat] = geometry.coordinates as [number, number];
+        const { geometry, properties = {} } = feature;
 
-            const popupContent = `
+        if (geometry.type === "Point") {
+          let [lng, lat] = geometry.coordinates as [number, number];
+
+          const popupContent = `
               <div style="
                 font-family: sans-serif;
                 font-size: 14px;
@@ -64,20 +79,19 @@ export function MapViewComponent() {
                 </div>
                 <div><strong>Type:</strong> ${properties?.healthcare || "N/A"}</div>
                 <div><strong>ID:</strong> ${properties?.osm_id || "N/A"}</div>
-                ${
-                  properties?.website
-                    ? `<div style="margin-top: 4px;"><a href="${properties.website}" target="_blank" rel="noopener noreferrer" style="color: #1a73e8; text-decoration: none;">Website</a></div>`
-                    : ""
-                }
+                ${properties?.website
+              ? `<div style="margin-top: 4px;"><a href="${properties.website}" target="_blank" rel="noopener noreferrer" style="color: #1a73e8; text-decoration: none;">Website</a></div>`
+              : ""
+            }
               </div>
             `;
-            const coordinates = geometry.coordinates as [number, number];
+          const coordinates = geometry.coordinates as [number, number];
 
-            new mapboxgl.Popup()
-              .setLngLat([lng, lat])
-              .setHTML(popupContent.trim())
-              .addTo(mapInstance);
-          }
+          new mapboxgl.Popup()
+            .setLngLat([lng, lat])
+            .setHTML(popupContent.trim())
+            .addTo(mapInstance);
+        }
       });
 
       mapInstance.on("mouseenter", "my-geojson-layer", () => {
@@ -119,6 +133,7 @@ export function MapViewComponent() {
             }
           });
         }
+        mapRef.current = mapInstance;
 
         const points = turf.points(jsonPoints.points);
 
@@ -141,6 +156,22 @@ export function MapViewComponent() {
           ref={mapContainerRef}
           className="w-full h-96 rounded relative"
         ></div>
+        <select
+          onChange={(e) => applySpecialtyFilter(e.target.value)}
+          className="mt-4 p-2 border rounded"
+        >
+          <option value="Specialty">All specialties</option>
+          <option value="General Dentist">General Dentist</option>
+          <option value="Orthodontist">Orthodontist</option>
+          <option value="Periodontist">Periodontist</option>
+          <option value="Endodontist">Endodontist</option>
+          <option value="Prosthodontist">Prosthodontist</option>
+          <option value="Pediatric Dentist">Pediatric Dentist</option>
+          <option value="Oral Surgeon">Oral Surgeon</option>
+          <option value="Implantologist">Implantologist</option>
+          <option value="Cosmetic Dentist">Cosmetic Dentist</option>
+        </select>
+
       </CardContent>
     </Card>
   );
