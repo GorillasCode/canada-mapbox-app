@@ -6,9 +6,10 @@ import { Button } from "../ui/button";
 import { DemographicData, useMapbox } from "../../contexts/mapboxContext";
 
 import statistics from "../../geojson/canada_statistics.json";
+import CustomPinkSwitch from "../ui/switch";
 
 export function SearchAreaComponent() {
-  const { setDemographicData, map, setMap, token } = useMapbox();
+  const { setDemographicData, map, setMap, token, radius, setRadius, searchByRadius, setSearchByRadius} = useMapbox();
 
   const [province, setProvince] = useState("");
   const [searchName, setSearchName] = useState("");
@@ -148,6 +149,11 @@ export function SearchAreaComponent() {
     { label: "Prince Edward Island", value: "Prince Edward Island" },
     { label: "Yukon", value: "Yukon" }
   ];
+
+  const enableRadiusSearch = (e: React.ChangeEvent<HTMLInputElement>)=> {
+    setSearchByRadius(e.target.checked);
+
+  }
   return (
     <div className="space-y-4">
       <SearchInput value={searchName} onChange={e => handleChange(e)} />
@@ -178,6 +184,28 @@ export function SearchAreaComponent() {
       <Button variant="search" onClick={e => handleSearchProvince()}>
         Search
       </Button>
+      <div className="flex items-center gap-4">
+        <CustomPinkSwitch handleChange={enableRadiusSearch} label="Search By Radius " />
+
+        <div>
+          <label htmlFor="radius-slider" className="block text-sm font-medium mb-1">
+            Search Radius: {radius} miles
+          </label>
+          <input
+            id="radius-slider"
+            type="range"
+            className="w-full accent-red-600 cursor-pointer "
+            min={10}
+            max={500}
+            step={1}
+            value={radius}
+            disabled={!searchByRadius}
+            onChange={(e) => setRadius(Number(e.target.value))}
+          />
+        </div>
+
+      </div>
+      
     </div>
   );
 }
