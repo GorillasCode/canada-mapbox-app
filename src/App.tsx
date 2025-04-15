@@ -14,12 +14,6 @@ export default function DentalMarketExplorer() {
 
       {/* Map View */}
       <MapViewComponent />
-
-      {/* Export Options */}
-      <div className="flex gap-4 justify-center">
-        <Button variant="outline">Save Location</Button>
-        <Button>Export Snapshot PDF</Button>
-      </div>
     </div>
   );
 }
