@@ -205,14 +205,12 @@ export function MapViewComponent() {
           ></Select>
         </div>
 
-        {/* Conteúdo do mapa */}
         <CardContent className="p-4">
           <div
             ref={mapContainerRef}
-            className="w-full h-96 rounded relative"
+            className="w-full h-[85vh] rounded relative"
           ></div>
         </CardContent>
-      </div>
     </Card>
   );
 }
