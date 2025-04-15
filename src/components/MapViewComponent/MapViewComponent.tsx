@@ -9,9 +9,12 @@ import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { token, setDemographicData, setMap, tilesetId, map } = useMapbox();
-  const [searchByRadius, setSearchByRadius] = useState(true);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+
+  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius, radius, setRadius } = useMapbox();
+
   const [specialty, setSpeciality] = useState("");
+  const [circleCenter, setCircleCenter] = useState<[number, number] | null>(null);
   mapboxgl.accessToken = token;
 
   function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
@@ -27,19 +30,28 @@ export function MapViewComponent() {
     }
   }
 
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const mapInstance = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/light-v10",
-      center: [-106.3468, 56.1304],
-      zoom: 3,
-    });
+    if (!searchByRadius) {
+      const mapInstance = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/mapbox/light-v10",
+        center: [-106.3468, 56.1304],
+        zoom: 3,
+      });
+  
+      mapRef.current = mapInstance;
+    }
+  }, [searchByRadius])
 
-    setMap(mapInstance);
+  
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    setMap(mapRef.current);
+    const mapInstance = mapRef.current;
 
     mapInstance.on("load", () => {
       mapInstance.loadImage("/tooth-icon.png", (error, image) => {
@@ -126,13 +138,13 @@ export function MapViewComponent() {
         });
       });
     });
-
+    
     if (searchByRadius) {
       mapInstance.on("click", (e) => {
-        const center = [e.lngLat.lng, e.lngLat.lat];
-        const radiusInMiles = 100;
-
-        // Cria um círculo (buffer) em torno do ponto clicado
+        const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+        setCircleCenter(center); // <- salva o centro clicado
+        const radiusInMiles = radius;
+      
         const circle = turf.circle(center, radiusInMiles, {
           steps: 64,
           units: "miles",
@@ -159,7 +171,6 @@ export function MapViewComponent() {
             },
           });
         }
-        mapRef.current = mapInstance;
 
         const points = turf.points(jsonPoints.points);
 
@@ -173,8 +184,45 @@ export function MapViewComponent() {
       });
     }
 
-    return () => mapInstance.remove();
-  }, [token, tilesetId, setDemographicData, setMap, searchByRadius]);
+    // return () => mapInstance.remove();
+  }, [token, tilesetId, setDemographicData, setMap, searchByRadius, radius, mapRef.current]);
+
+  useEffect(() => {
+    const mapInstance = mapRef.current;
+  
+    if (!searchByRadius || !circleCenter || !mapInstance ) {
+      return;
+    };
+  
+    const circle = turf.circle(circleCenter, radius, {
+      steps: 64,
+      units: "miles",
+    });
+  
+    if (mapInstance.getSource("circle")) {
+      (mapInstance.getSource("circle") as mapboxgl.GeoJSONSource).setData(circle);
+    } else {
+      mapInstance.addSource("circle", {
+        type: "geojson",
+        data: circle,
+      });
+
+      mapInstance.addLayer({
+        id: "circle-layer",
+        type: "fill",
+        source: "circle",
+        paint: {
+          "fill-color": "#ff0000",
+          "fill-opacity": 0.2,
+        },
+      });
+    }
+  
+    const points = turf.points(jsonPoints.points);
+    const pointsWithin = turf.pointsWithinPolygon(points, circle);
+  
+    (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
+  }, [radius, searchByRadius ]);
 
   return (
     <Card>
@@ -195,10 +243,11 @@ export function MapViewComponent() {
           onChange={(e) => applySpecialtyFilter(map!, e.target.value)}
         ></Select>
       </div>
+      
       <CardContent className="p-4">
         <div
           ref={mapContainerRef}
-          className="w-full h-96 rounded relative"
+          className="w-full h-[85vh] rounded relative"
         ></div>
       </CardContent>
     </Card>
