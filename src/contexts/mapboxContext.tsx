@@ -10,10 +10,6 @@ interface MapboxContextType {
   demographicData: DemographicData;
   setDemographicData: (data: DemographicData) => void;
   tilesetId: string;
-  setSearchByRadius: (searchByRadius: boolean) => void;
-  searchByRadius: boolean; 
-  setRadius: (radius: number) => void;
-  radius: number;
 }
 
 export interface DemographicData {
@@ -35,7 +31,6 @@ export interface DemographicData {
 const MapboxContext = createContext<MapboxContextType | undefined>(undefined);
 
 export const MapboxProvider = ({ children }: { children: ReactNode }) => {
-  const [radius, setRadius] = useState(100);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [demographicData, setDemographicData] = useState<DemographicData>({
     population: 0,
@@ -54,11 +49,10 @@ export const MapboxProvider = ({ children }: { children: ReactNode }) => {
   });
   const [center, setCenter] = useState<[number, number]>([-46.63, -23.55]); 
   const token = process.env.REACT_APP_MAPBOX_TOKEN!;
-  const tilesetId = process.env.REACT_APP_MAPBOX_TILESETID!;
-  const [searchByRadius, setSearchByRadius] = useState(false);
+  const tilesetId = process.env.REACT_APP_MAPBOX_TILESETID!
 
   return (
-    <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId, searchByRadius, setSearchByRadius, radius, setRadius }}>
+    <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId }}>
       {children}
     </MapboxContext.Provider>
   );
