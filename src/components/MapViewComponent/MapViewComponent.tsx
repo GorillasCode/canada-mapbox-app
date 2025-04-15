@@ -4,16 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { useMapbox } from "../../contexts/mapboxContext";
 import geojsonData from "../../geojson/canada_dentists.geojson";
 import jsonPoints from "../../geojson/canada_dentists_points.json";
-import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius } =
-    useMapbox();
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+
+  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius, radius } = useMapbox();
 
   const [specialty, setSpeciality] = useState("");
+  const [circleCenter, setCircleCenter] = useState<[number, number] | null>(null);
   mapboxgl.accessToken = token;
 
   function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
@@ -29,19 +31,28 @@ export function MapViewComponent() {
     }
   }
 
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const mapInstance = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/light-v10",
-      center: [-106.3468, 56.1304],
-      zoom: 3
-    });
+    if (!searchByRadius) {
+      const mapInstance = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/mapbox/light-v10",
+        center: [-106.3468, 56.1304],
+        zoom: 3,
+      });
+  
+      mapRef.current = mapInstance;
+    }
+  }, [searchByRadius])
 
-    setMap(mapInstance);
+  
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    setMap(mapRef.current);
+    const mapInstance = mapRef.current;
 
     mapInstance.on("load", () => {
       mapInstance.loadImage("/tooth-icon.png", (error, image) => {
@@ -128,11 +139,12 @@ export function MapViewComponent() {
         });
       });
     });
-
+    
     if (searchByRadius) {
       mapInstance.on("click", e => {
-        const center = [e.lngLat.lng, e.lngLat.lat];
-        const radiusInMiles = 100;
+        const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+        setCircleCenter(center);
+        const radiusInMiles = radius || 100;
 
         // Cria um círculo (buffer) em torno do ponto clicado
         const circle = turf.circle(center, radiusInMiles, {
@@ -161,7 +173,6 @@ export function MapViewComponent() {
             }
           });
         }
-        mapRef.current = mapInstance;
 
         const points = turf.points(jsonPoints.points);
 
@@ -175,8 +186,45 @@ export function MapViewComponent() {
       });
     }
 
-    return () => mapInstance.remove();
+    // return () => mapInstance.remove();
   }, [token, tilesetId, setDemographicData, setMap, searchByRadius]);
+
+  useEffect(() => {
+    const mapInstance = mapRef.current;
+  
+    if (!searchByRadius || !circleCenter || !mapInstance ) {
+      return;
+    };
+  
+    const circle = turf.circle(circleCenter, radius, {
+      steps: 64,
+      units: "miles",
+    });
+  
+    if (mapInstance.getSource("circle")) {
+      (mapInstance.getSource("circle") as mapboxgl.GeoJSONSource).setData(circle);
+    } else {
+      mapInstance.addSource("circle", {
+        type: "geojson",
+        data: circle,
+      });
+
+      mapInstance.addLayer({
+        id: "circle-layer",
+        type: "fill",
+        source: "circle",
+        paint: {
+          "fill-color": "#ff0000",
+          "fill-opacity": 0.2,
+        },
+      });
+    }
+  
+    const points = turf.points(jsonPoints.points);
+    const pointsWithin = turf.pointsWithinPolygon(points, circle);
+  
+    (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
+  }, [radius, searchByRadius ]);
 
   return (
     <Card>
@@ -211,6 +259,7 @@ export function MapViewComponent() {
             className="w-full h-[85vh] rounded relative"
           ></div>
         </CardContent>
+      </div>
     </Card>
   );
 }

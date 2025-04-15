@@ -12,6 +12,8 @@ interface MapboxContextType {
   tilesetId: string;
   setSearchByRadius: (searchByRadius: boolean) => void;
   searchByRadius: boolean; 
+  setRadius: (radius: number) => void;
+  radius: number;
 }
 
 export interface DemographicData {
@@ -33,6 +35,7 @@ export interface DemographicData {
 const MapboxContext = createContext<MapboxContextType | undefined>(undefined);
 
 export const MapboxProvider = ({ children }: { children: ReactNode }) => {
+  const [radius, setRadius] = useState(100);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const [demographicData, setDemographicData] = useState<DemographicData>({
     population: 0,
@@ -55,7 +58,7 @@ export const MapboxProvider = ({ children }: { children: ReactNode }) => {
   const [searchByRadius, setSearchByRadius] = useState(false);
 
   return (
-    <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId, searchByRadius, setSearchByRadius }}>
+    <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId, searchByRadius, setSearchByRadius, radius, setRadius }}>
       {children}
     </MapboxContext.Provider>
   );

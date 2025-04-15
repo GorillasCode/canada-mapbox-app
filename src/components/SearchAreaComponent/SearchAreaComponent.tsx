@@ -9,7 +9,7 @@ import statistics from "../../geojson/canada_statistics.json";
 import CustomPinkSwitch from "../ui/switch";
 
 export function SearchAreaComponent() {
-  const { setDemographicData, map, setMap, token, setSearchByRadius } = useMapbox();
+  const { setDemographicData, map, setMap, token, setSearchByRadius, radius, setRadius, searchByRadius} = useMapbox();
 
   const [province, setProvince] = useState("");
   const [searchName, setSearchName] = useState("");
@@ -185,7 +185,28 @@ export function SearchAreaComponent() {
       <Button variant="search" onClick={e => handleSearchProvince()}>
         Search
       </Button>
-      <CustomPinkSwitch handleChange={enableRadiusSearch} label="Radius Search"/>
+      <div className="flex items-center gap-4">
+        <CustomPinkSwitch handleChange={enableRadiusSearch} label="Search By Radius " />
+
+        <div>
+          <label htmlFor="radius-slider" className="block text-sm font-medium mb-1">
+            Search Radius: {radius} miles
+          </label>
+          <input
+            id="radius-slider"
+            type="range"
+            className="w-full accent-red-600 cursor-pointer "
+            min={10}
+            max={500}
+            step={1}
+            value={radius}
+            disabled={!searchByRadius}
+            onChange={(e) => setRadius(Number(e.target.value))}
+          />
+        </div>
+
+      </div>
+      
     </div>
   );
 }
