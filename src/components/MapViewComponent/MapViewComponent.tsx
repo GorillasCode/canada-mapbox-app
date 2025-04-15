@@ -5,11 +5,13 @@ import { useMapbox } from "../../contexts/mapboxContext";
 import geojsonData from "../../geojson/canada_dentists.geojson";
 import jsonPoints from "../../geojson/canada_dentists_points.json";
 import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius } = useMapbox();
+  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius } =
+    useMapbox();
 
   const [specialty, setSpeciality] = useState("");
   mapboxgl.accessToken = token;
@@ -22,7 +24,7 @@ export function MapViewComponent() {
       map.setFilter("my-geojson-layer", [
         "==",
         ["get", "healthcare:speciality"],
-        specialty.toLocaleLowerCase(),
+        specialty.toLocaleLowerCase()
       ]);
     }
   }
@@ -36,7 +38,7 @@ export function MapViewComponent() {
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/light-v10",
       center: [-106.3468, 56.1304],
-      zoom: 3,
+      zoom: 3
     });
 
     setMap(mapInstance);
@@ -53,7 +55,7 @@ export function MapViewComponent() {
 
         mapInstance.addSource("my-geojson", {
           type: "geojson",
-          data: geojsonData,
+          data: geojsonData
         });
 
         mapInstance.addLayer({
@@ -69,15 +71,15 @@ export function MapViewComponent() {
               3,
               0.018,
               12,
-              0.03,
+              0.03
             ],
-            "icon-allow-overlap": true,
-          },
+            "icon-allow-overlap": true
+          }
         });
 
         mapInstance.moveLayer("my-geojson-layer");
 
-        mapInstance.on("click", "my-geojson-layer", (e) => {
+        mapInstance.on("click", "my-geojson-layer", e => {
           const feature = e.features?.[0];
           if (!feature) return;
 
@@ -128,14 +130,14 @@ export function MapViewComponent() {
     });
 
     if (searchByRadius) {
-      mapInstance.on("click", (e) => {
+      mapInstance.on("click", e => {
         const center = [e.lngLat.lng, e.lngLat.lat];
         const radiusInMiles = 100;
 
         // Cria um círculo (buffer) em torno do ponto clicado
         const circle = turf.circle(center, radiusInMiles, {
           steps: 64,
-          units: "miles",
+          units: "miles"
         });
 
         // Atualiza ou adiciona a layer do círculo
@@ -146,7 +148,7 @@ export function MapViewComponent() {
         } else {
           mapInstance.addSource("circle", {
             type: "geojson",
-            data: circle,
+            data: circle
           });
 
           mapInstance.addLayer({
@@ -155,8 +157,8 @@ export function MapViewComponent() {
             source: "circle",
             paint: {
               "fill-color": "#ff0000",
-              "fill-opacity": 0.2,
-            },
+              "fill-opacity": 0.2
+            }
           });
         }
         mapRef.current = mapInstance;
@@ -178,29 +180,39 @@ export function MapViewComponent() {
 
   return (
     <Card>
-      <div className="w-56 p-4">
-        <Select
-          options={[
-            { label: "All specialties", value: "Specialty" },
-            { label: "General Dentist", value: "general" },
-            { label: "Denturist", value: "denturist" },
-            { label: "Orthodontics", value: "orthodontics" },
-            { label: "Endodontics", value: "endodontics" },
-            { label: "Dentist", value: "dentist" },
-            { label: "Anaesthetics", value: "anaesthetics" },
-            { label: "Dentistry", value: "dentistry" },
-          ]}
-          value={specialty}
-          label="Specialties"
-          onChange={(e) => applySpecialtyFilter(map!, e.target.value)}
-        ></Select>
+      <div className="relative w-full">
+        <div className="absolute top-4 right-4 flex flex-row space-x-2 opacity-20 hover:opacity-100 transition-opacity duration-300">
+          <Button variant="outline">Save Location</Button>
+          <Button>Export Snapshot PDF</Button>
+        </div>
+
+        {/* Select de especialidades */}
+        <div className="w-56 p-4">
+          <Select
+            options={[
+              { label: "All specialties", value: "Specialty" },
+              { label: "General Dentist", value: "general" },
+              { label: "Denturist", value: "denturist" },
+              { label: "Orthodontics", value: "orthodontics" },
+              { label: "Endodontics", value: "endodontics" },
+              { label: "Dentist", value: "dentist" },
+              { label: "Anaesthetics", value: "anaesthetics" },
+              { label: "Dentistry", value: "dentistry" }
+            ]}
+            value={specialty}
+            label="Specialties"
+            onChange={e => applySpecialtyFilter(map!, e.target.value)}
+          ></Select>
+        </div>
+
+        {/* Conteúdo do mapa */}
+        <CardContent className="p-4">
+          <div
+            ref={mapContainerRef}
+            className="w-full h-96 rounded relative"
+          ></div>
+        </CardContent>
       </div>
-      <CardContent className="p-4">
-        <div
-          ref={mapContainerRef}
-          className="w-full h-96 rounded relative"
-        ></div>
-      </CardContent>
     </Card>
   );
 }
