@@ -1,19 +1,21 @@
 import * as React from 'react';
 import { alpha, styled } from '@mui/material/styles';
-import { pink } from '@mui/material/colors';
+import { red } from '@mui/material/colors';
 import Switch from '@mui/material/Switch';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
 const PinkSwitch = styled(Switch)(({ theme }) => ({
+  
   '& .MuiSwitch-switchBase.Mui-checked': {
-    color: pink[600],
+    color: red[300],
     '&:hover': {
-      backgroundColor: alpha(pink[600], theme.palette.action.hoverOpacity),
+      backgroundColor: alpha(red[600], theme.palette.action.hoverOpacity),
+      color: red[600],
     },
   },
   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-    backgroundColor: pink[600],
+    backgroundColor: red[400],
   },
 }));
 
