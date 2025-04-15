@@ -211,6 +211,7 @@ export function MapViewComponent() {
             className="w-full h-[85vh] rounded relative"
           ></div>
         </CardContent>
+      </div>
     </Card>
   );
 }
