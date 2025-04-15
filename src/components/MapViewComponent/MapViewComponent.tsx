@@ -9,9 +9,10 @@ import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius } = useMapbox();
+  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius, radius, setRadius } = useMapbox();
 
   const [specialty, setSpeciality] = useState("");
+  const [circleCenter, setCircleCenter] = useState<[number, number] | null>(null);
   mapboxgl.accessToken = token;
 
   function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
@@ -126,13 +127,14 @@ export function MapViewComponent() {
         });
       });
     });
+    
 
     if (searchByRadius) {
       mapInstance.on("click", (e) => {
-        const center = [e.lngLat.lng, e.lngLat.lat];
+        const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+        setCircleCenter(center); // <- salva o centro clicado
         const radiusInMiles = 100;
-
-        // Cria um círculo (buffer) em torno do ponto clicado
+      
         const circle = turf.circle(center, radiusInMiles, {
           steps: 64,
           units: "miles",
@@ -175,6 +177,42 @@ export function MapViewComponent() {
 
     return () => mapInstance.remove();
   }, [token, tilesetId, setDemographicData, setMap, searchByRadius]);
+  useEffect(() => {
+    const mapInstance = mapRef.current;
+  
+    if (!searchByRadius || !mapRef.current || !circleCenter || !mapInstance ) return;
+  
+
+  
+    const circle = turf.circle(circleCenter, radius, {
+      steps: 64,
+      units: "miles",
+    });
+  
+    if (mapInstance.getSource("circle")) {
+      (mapInstance.getSource("circle") as mapboxgl.GeoJSONSource).setData(circle);
+    } else {
+      mapInstance.addSource("circle", {
+        type: "geojson",
+        data: circle,
+      });
+  
+      mapInstance.addLayer({
+        id: "circle-layer",
+        type: "fill",
+        source: "circle",
+        paint: {
+          "fill-color": "#ff0000",
+          "fill-opacity": 0.2,
+        },
+      });
+    }
+  
+    const points = turf.points(jsonPoints.points);
+    const pointsWithin = turf.pointsWithinPolygon(points, circle);
+  
+    (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
+  }, [radius, searchByRadius, circleCenter]);
 
   return (
     <Card>
@@ -195,6 +233,7 @@ export function MapViewComponent() {
           onChange={(e) => applySpecialtyFilter(map!, e.target.value)}
         ></Select>
       </div>
+      
       <CardContent className="p-4">
         <div
           ref={mapContainerRef}
