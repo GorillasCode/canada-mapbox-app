@@ -6,9 +6,10 @@ import { Button } from "../ui/button";
 import { DemographicData, useMapbox } from "../../contexts/mapboxContext";
 
 import statistics from "../../geojson/canada_statistics.json";
+import CustomPinkSwitch from "../ui/switch";
 
 export function SearchAreaComponent() {
-  const { setDemographicData, map, setMap, token } = useMapbox();
+  const { setDemographicData, map, setMap, token, setSearchByRadius } = useMapbox();
 
   const [province, setProvince] = useState("");
   const [searchName, setSearchName] = useState("");
@@ -148,6 +149,12 @@ export function SearchAreaComponent() {
     { label: "Prince Edward Island", value: "Prince Edward Island" },
     { label: "Yukon", value: "Yukon" }
   ];
+
+  const enableRadiusSearch = (e: React.ChangeEvent<HTMLInputElement>)=> {
+    setSearchByRadius(e.target.checked);
+
+  }
+
   return (
     <div className="space-y-4">
       <SearchInput value={searchName} onChange={e => handleChange(e)} />
@@ -178,6 +185,7 @@ export function SearchAreaComponent() {
       <Button variant="search" onClick={e => handleSearchProvince()}>
         Search
       </Button>
+      <CustomPinkSwitch handleChange={enableRadiusSearch} label="Radius Search"/>
     </div>
   );
 }
