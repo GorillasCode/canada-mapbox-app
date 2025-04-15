@@ -14,8 +14,8 @@ export function MapViewComponent() {
 
   const { token, setDemographicData, setMap, tilesetId, map, searchByRadius, radius } = useMapbox();
 
-  const [searchByRadius, setSearchByRadius] = useState(true);
   const [specialty, setSpeciality] = useState("");
+  const [circleCenter, setCircleCenter] = useState<[number, number] | null>(null);
   mapboxgl.accessToken = token;
 
   function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
@@ -31,19 +31,28 @@ export function MapViewComponent() {
     }
   }
 
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const mapInstance = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/light-v10",
-      center: [-106.3468, 56.1304],
-      zoom: 3,
-    });
+    if (!searchByRadius) {
+      const mapInstance = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: "mapbox://styles/mapbox/light-v10",
+        center: [-106.3468, 56.1304],
+        zoom: 3,
+      });
+  
+      mapRef.current = mapInstance;
+    }
+  }, [searchByRadius])
 
-    setMap(mapInstance);
+  
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    setMap(mapRef.current);
+    const mapInstance = mapRef.current;
 
     mapInstance.on("load", () => {
       mapInstance.loadImage("/tooth-icon.png", (error, image) => {
@@ -130,13 +139,12 @@ export function MapViewComponent() {
         });
       });
     });
-
+    
     if (searchByRadius) {
       mapInstance.on("click", e => {
         const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
         setCircleCenter(center);
         const radiusInMiles = radius || 100;
-
 
         // Cria um círculo (buffer) em torno do ponto clicado
         const circle = turf.circle(center, radiusInMiles, {
@@ -165,7 +173,6 @@ export function MapViewComponent() {
             }
           });
         }
-        mapRef.current = mapInstance;
 
         const points = turf.points(jsonPoints.points);
 
@@ -178,6 +185,7 @@ export function MapViewComponent() {
         )?.setData(pointsWithin);
       });
     }
+
     // return () => mapInstance.remove();
   }, [token, tilesetId, setDemographicData, setMap, searchByRadius]);
 
@@ -217,7 +225,6 @@ export function MapViewComponent() {
   
     (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
   }, [radius, searchByRadius ]);
-
 
   return (
     <Card>
