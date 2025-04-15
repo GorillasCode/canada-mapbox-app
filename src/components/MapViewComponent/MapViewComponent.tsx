@@ -9,8 +9,8 @@ import { Select } from "../ui/select";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const { token, setDemographicData, setMap, tilesetId, map } = useMapbox();
-  const [searchByRadius, setSearchByRadius] = useState(true);
+  const { token, setDemographicData, setMap, tilesetId, map, searchByRadius } = useMapbox();
+
   const [specialty, setSpeciality] = useState("");
   mapboxgl.accessToken = token;
 
