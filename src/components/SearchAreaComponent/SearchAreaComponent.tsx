@@ -186,26 +186,26 @@ export function SearchAreaComponent() {
         Search
       </Button>
       <div className="flex items-center gap-4">
-  <CustomPinkSwitch handleChange={enableRadiusSearch} label="Radius Search" />
+        <CustomPinkSwitch handleChange={enableRadiusSearch} label="Search By Radius " />
 
-  {searchByRadius && (
-    <div className="w-56 p-4">
-      <label htmlFor="radius-slider" className="block text-sm font-medium mb-1">
-        Raio de busca: {radius} mi
-      </label>
-      <input
-        id="radius-slider"
-        type="range"
-        min={10}
-        max={500}
-        step={10}
-        value={radius}
-        onChange={(e) => setRadius(Number(e.target.value))}
-        className="w-full"
-      />
-    </div>
-  )}
-</div>
+        <div>
+          <label htmlFor="radius-slider" className="block text-sm font-medium mb-1">
+            Search Radius: {radius} miles
+          </label>
+          <input
+            id="radius-slider"
+            type="range"
+            className="w-full accent-red-600 cursor-pointer "
+            min={10}
+            max={500}
+            step={1}
+            value={radius}
+            disabled={!searchByRadius}
+            onChange={(e) => setRadius(Number(e.target.value))}
+          />
+        </div>
+
+      </div>
       
     </div>
   );
