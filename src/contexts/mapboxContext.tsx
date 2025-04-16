@@ -55,7 +55,7 @@ export const MapboxProvider = ({ children }: { children: ReactNode }) => {
   const token = process.env.REACT_APP_MAPBOX_TOKEN!;
   const tilesetId = process.env.REACT_APP_MAPBOX_TILESETID!
   const [searchByRadius, setSearchByRadius] = useState(false);
-  const [radius, setRadius] = useState(100);
+  const [radius, setRadius] = useState(5000);
 
   return (
     <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId, searchByRadius, setSearchByRadius, radius, setRadius }}>
