@@ -27,9 +27,16 @@ export function Select({ label, value, onChange, options }: SelectProps) {
         value={value}
         label={label}
         onChange={onChange}
+        autoWidth
+        style={{width: "20vw"}}
+        className="bg-gray-100 text-black"
       >
         {options.map(option => (
-          <MenuItem key={option.value} value={option.value}>
+          <MenuItem 
+            style={{width: "20vw"}} 
+            key={option.value} 
+            value={option.value}
+            >
             {option.label}
           </MenuItem>
         ))}
