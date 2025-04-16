@@ -233,9 +233,20 @@ export function MapViewComponent() {
     });
 
     if (!mapInstance || !mapInstance.getSource("circle")) return;
+
     (mapInstance?.getSource("circle") as mapboxgl.GeoJSONSource)?.setData(
       newSizeCircle
     );
+
+    const points = turf.points(jsonPoints.points);
+
+    // Filtra pontos dentro do raio
+    const pointsWithin = turf.pointsWithinPolygon(points, newSizeCircle);
+
+    // Atualiza os pontos no mapa com os que estão dentro do raio
+    (
+      mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource
+    )?.setData(pointsWithin);
 
   }, [radius, currentCirclePlace]);
 
