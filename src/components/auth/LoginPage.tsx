@@ -103,7 +103,7 @@ const LoginPage = () => {
                                 cursor: 'pointer', 
                                 fontWeight: 500,
                                 '&:hover': { textDecoration: 'underline', color:'#9a007'} }}
-                            // onClick={() => navigate('')} 
+                            onClick={() => navigate('Register')} 
                         >
                             Don't have an account?
                         </Typography>
