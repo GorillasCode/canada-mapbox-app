@@ -1,4 +1,4 @@
-import InsightsIcon from '@mui/icons-material/Insights';
+import InsightsIcon from "@mui/icons-material/Insights";
 import * as turf from "@turf/turf";
 import mapboxgl from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
@@ -9,34 +9,35 @@ import { DemographicSnapshotComponent } from "../DemographicSnapshotComponent/De
 import { Button } from "../ui/button";
 import CustomModal from "../ui/modal";
 import { Select } from "../ui/select";
-import SearchIcon from '@mui/icons-material/Search';
-import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
-import { SearchAreaByPlaceComponent } from '../SearchAreaComponent/SearchAreaByPlaceComponent';
-import { Slider } from '@mui/material';
-
+import SearchIcon from "@mui/icons-material/Search";
+import LocationSearchingIcon from "@mui/icons-material/LocationSearching";
+import { SearchAreaByPlaceComponent } from "../SearchAreaComponent/SearchAreaByPlaceComponent";
+import { Slider } from "@mui/material";
 
 export function MapViewComponent() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
-  const { 
-    token, 
-    setDemographicData, 
-    setMap, 
-    tilesetId, 
-    map, 
+  const {
+    token,
+    setDemographicData,
+    setMap,
+    tilesetId,
+    map,
     searchByRadius,
-    setSearchByRadius, 
+    setSearchByRadius,
     radius,
     setRadius,
     currentCirclePlace,
-    setCurrentCirclePlace   
+    setCurrentCirclePlace
   } = useMapbox();
 
   const [specialty, setSpeciality] = useState("Specialty");
   const [openInsightsModal, setOpenInsightsModal] = useState(false);
-  const [openSearchAreaByPlaceModal, setOpenSearchAreaByPlaceModal] = useState(false);
-  const [openSearchAreaByRadiusModal, setOpenSearchAreaByRadiusModal] = useState(false);
+  const [openSearchAreaByPlaceModal, setOpenSearchAreaByPlaceModal] =
+    useState(false);
+  const [openSearchAreaByRadiusModal, setOpenSearchAreaByRadiusModal] =
+    useState(false);
   mapboxgl.accessToken = token;
 
   function applySpecialtyFilter(map: mapboxgl.Map, specialty: string) {
@@ -61,14 +62,13 @@ export function MapViewComponent() {
         container: mapContainerRef.current,
         style: "mapbox://styles/mapbox/light-v10",
         center: [-106.3468, 56.1304],
-        zoom: 3,
+        zoom: 3
       });
-  
+
       mapRef.current = mapInstance;
     }
-
   }, [searchByRadius]);
-  
+
   // Add dentist points to the map
   useEffect(() => {
     if (!mapRef.current) return;
@@ -160,15 +160,20 @@ export function MapViewComponent() {
           mapInstance.getCanvas().style.cursor = "";
         });
       });
+      mapInstance.loadImage("pin.png", (error, image) => {
+        if (error || !image) return;
+        if (!mapInstance.hasImage("center-pin")) {
+          mapInstance.addImage("center-pin", image);
+        }
+      });
     });
-
   }, [token, tilesetId, setDemographicData, setMap, searchByRadius]);
 
   // Create Radius Search
   useEffect(() => {
     const mapInstance = mapRef.current;
     if (!mapInstance) return;
-  
+
     // Remove círculo se desativar o modo de raio
     if (!searchByRadius) {
       if (mapInstance.getSource("circle")) {
@@ -177,15 +182,52 @@ export function MapViewComponent() {
       }
       return;
     }
-  
+
     // Se já existe um ponto, desenha o círculo automaticamente
     if (searchByRadius && currentCirclePlace) {
       const center = currentCirclePlace;
-  
+
+      const centerPoint: GeoJSON.FeatureCollection<GeoJSON.Point> = {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: currentCirclePlace
+            },
+            properties: {}
+          }
+        ]
+      };
+
+      if (mapInstance.getSource("circle-center")) {
+        (
+          mapInstance.getSource("circle-center") as mapboxgl.GeoJSONSource
+        ).setData(centerPoint);
+      } else {
+        mapInstance.addSource("circle-center", {
+          type: "geojson",
+          data: centerPoint
+        });
+
+        mapInstance.addLayer({
+          id: "circle-center-layer",
+          type: "symbol",
+          source: "circle-center",
+          layout: {
+            "icon-image": "center-pin",
+            "icon-size": 0.07,
+            "icon-allow-overlap": true
+          }
+        });
+      }
+
       const circle = turf.circle(center, radius, {
         steps: 64,
         units: "meters"
       });
+
       // Atualiza ou adiciona a layer do círculo
       if (mapInstance.getSource("circle")) {
         (mapInstance?.getSource("circle") as mapboxgl.GeoJSONSource)?.setData(
@@ -196,7 +238,7 @@ export function MapViewComponent() {
           type: "geojson",
           data: circle
         });
-  
+
         mapInstance.addLayer({
           id: "circle-layer",
           type: "fill",
@@ -207,58 +249,59 @@ export function MapViewComponent() {
           }
         });
       }
-  
+
       const points = turf.points(jsonPoints.points);
-      
-    // Filtra pontos dentro do raio
+
       const pointsWithin = turf.pointsWithinPolygon(points, circle);
-  
-      (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
+
+      (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(
+        pointsWithin
+      );
     }
-    // Atualiza os pontos no mapa com os que estão dentro do raio  
     const handleClick = (e: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
       const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
       setCurrentCirclePlace(center);
-  
+
       const circle = turf.circle(center, radius, {
         steps: 100,
         units: "meters"
       });
-  
+
       if (mapInstance.getSource("circle")) {
-        (mapInstance.getSource("circle") as mapboxgl.GeoJSONSource).setData(circle);
+        (mapInstance.getSource("circle") as mapboxgl.GeoJSONSource).setData(
+          circle
+        );
       } else {
         mapInstance.addSource("circle", {
           type: "geojson",
           data: circle
         });
-  
+
         mapInstance.addLayer({
           id: "circle-layer",
           type: "fill",
           source: "circle",
           paint: {
             "fill-color": "#ff0000",
-            "fill-opacity": 0.2
+            "fill-opacity": 0.1
           }
         });
       }
-  
+
       const points = turf.points(jsonPoints.points);
       const pointsWithin = turf.pointsWithinPolygon(points, circle);
-  
-      (
-        mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource
-      )?.setData(pointsWithin);
+
+      (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(
+        pointsWithin
+      );
     };
-  
+
     mapInstance.on("click", handleClick);
-  
+
     return () => {
       mapInstance.off("click", handleClick);
-    }
+    };
   }, [searchByRadius, radius, currentCirclePlace]);
-  
 
   // Update circle when radius changes
   useEffect(() => {
@@ -283,26 +326,23 @@ export function MapViewComponent() {
     const pointsWithin = turf.pointsWithinPolygon(points, newSizeCircle);
 
     // Atualiza os pontos no mapa com os que estão dentro do raio
-    (
-      mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource
-    )?.setData(pointsWithin);
-
+    (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(
+      pointsWithin
+    );
   }, [radius, currentCirclePlace]);
 
-
   function showModal(action: string) {
-
     switch (action) {
       case "Radius":
         setOpenSearchAreaByRadiusModal(!openSearchAreaByRadiusModal);
         break;
-      case "Place": 
+      case "Place":
         setOpenSearchAreaByPlaceModal(!openSearchAreaByPlaceModal);
         break;
       case "Metrics":
         setOpenInsightsModal(!openInsightsModal);
         break;
-      default:  
+      default:
         break;
     }
   }
@@ -312,8 +352,10 @@ export function MapViewComponent() {
   }
 
   const MapMenu = () => (
-    <div className="w-full p-4" style={{position: "absolute", top: 0, left: 0, zIndex: 1, }}>
-
+    <div
+      className="w-full p-4"
+      style={{ position: "absolute", top: 0, left: 0, zIndex: 1 }}
+    >
       <div className="flex items-center gap-4 mb-4">
         {/* Filter by specialist btn */}
         <Select
@@ -329,13 +371,12 @@ export function MapViewComponent() {
           ]}
           value={specialty}
           label="Specialties"
-          
           onChange={e => applySpecialtyFilter(map!, e.target.value)}
         />
 
         {searchByRadius && (
           <Slider
-            style={{color: "red"}}
+            style={{ color: "red" }}
             aria-label="Temperature"
             defaultValue={500}
             getAriaValueText={() => "radius"}
@@ -353,11 +394,17 @@ export function MapViewComponent() {
         {/* Search By Radius btn */}
         <Button
           variant="outline"
-          className={`${searchByRadius ? "hover:bg-gray-200 hover:text-red-600" : "hover:bg-red-600 hover:text-white"} ${searchByRadius ? "bg-red-600" : ""} ${searchByRadius ? "text-white" : "text-red-600"}`}
+          className={`${
+            searchByRadius
+              ? "hover:bg-gray-200 hover:text-red-600"
+              : "hover:bg-red-600 hover:text-white"
+          } ${searchByRadius ? "bg-red-600" : ""} ${
+            searchByRadius ? "text-white" : "text-red-600"
+          }`}
           onClick={enableSearchAreByRadius}
-          tooltip='Search By Radius'
-          >
-            <LocationSearchingIcon />
+          tooltip="Search By Radius"
+        >
+          <LocationSearchingIcon />
         </Button>
 
         {/* Search By Place btn */}
@@ -365,9 +412,9 @@ export function MapViewComponent() {
           variant="outline"
           className={`text-red-600 hover:bg-red-600 hover:text-white`}
           onClick={() => showModal("Place")}
-          tooltip='Search By Places'
-          >
-            <SearchIcon />
+          tooltip="Search By Places"
+        >
+          <SearchIcon />
         </Button>
 
         {/* Insight btn */}
@@ -375,17 +422,16 @@ export function MapViewComponent() {
           variant="outline"
           className={`text-red-600 hover:bg-red-600 hover:text-white`}
           onClick={() => showModal("Metrics")}
-          size='sm'
-          tooltip='Show Insights'
-          >
-            <InsightsIcon />
+          size="sm"
+          tooltip="Show Insights"
+        >
+          <InsightsIcon />
         </Button>
       </div>
 
-      <div>
-      </div>
+      <div></div>
     </div>
-  )
+  );
 
   return (
     <>
@@ -394,28 +440,40 @@ export function MapViewComponent() {
         <CustomModal
           open={true}
           handleClose={() => setOpenInsightsModal(false)}
-          child={<DemographicSnapshotComponent />}  
+          child={<DemographicSnapshotComponent />}
         />
       )}
 
       {/* SearchAreaByPlaceModal */}
       {openSearchAreaByPlaceModal && (
-          <CustomModal 
-              open={openSearchAreaByPlaceModal} 
-              handleClose={() => setOpenSearchAreaByPlaceModal(false)} 
-              child={<SearchAreaByPlaceComponent 
-                onClose={() => setOpenSearchAreaByPlaceModal(false)}/>} />
+        <CustomModal
+          open={openSearchAreaByPlaceModal}
+          handleClose={() => setOpenSearchAreaByPlaceModal(false)}
+          child={
+            <SearchAreaByPlaceComponent
+              onClose={() => setOpenSearchAreaByPlaceModal(false)}
+            />
+          }
+        />
       )}
 
-      <div style={{position: "relative", height: "80vh",transform: 'translateZ(0px)', flexGrow: 1, backgroundColor: "red"}}>
+      <div
+        style={{
+          position: "relative",
+          height: "80vh",
+          transform: "translateZ(0px)",
+          flexGrow: 1,
+          backgroundColor: "red"
+        }}
+      >
         <MapMenu />
 
-        <div id="map" style={{width: "100%", height: "100%"}}>
-            <div
-              ref={mapContainerRef}
-              className="w-full h-full"
-              style={{position: "absolute", top: 0, left: 0}}
-            ></div>
+        <div id="map" style={{ width: "100%", height: "100%" }}>
+          <div
+            ref={mapContainerRef}
+            className="w-full h-full"
+            style={{ position: "absolute", top: 0, left: 0 }}
+          ></div>
         </div>
         {/* <SpeedDialTooltipOpen /> */}
       </div>
