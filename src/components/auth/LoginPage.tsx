@@ -79,18 +79,6 @@ const LoginPage = () => {
                         size="large"
                         fullWidth
                         onClick={handleLogin}
-                        sx={{
-                            borderRadius: 2,
-                            padding: 1.5,
-                            background: 'linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                            letterSpacing: 1,
-                            '&:hover': {
-                                background: 'linear-gradient(45deg, #9a0007 30%, #c62828 90%)',
-                            },
-                        }}
                     >
                         Sign in
                     </Button>
@@ -99,10 +87,9 @@ const LoginPage = () => {
                             variant="body2"
                             color="primary"
                             sx={{ 
-                                color: '#b71c1c', 
                                 cursor: 'pointer', 
                                 fontWeight: 500,
-                                '&:hover': { textDecoration: 'underline', color:'#9a007'} }}
+                                '&:hover': { textDecoration: 'underline'} }}
                             onClick={() => navigate('Register')} 
                         >
                             Don't have an account?
@@ -111,10 +98,9 @@ const LoginPage = () => {
                             variant="body2"
                             color="primary"
                             sx={{ 
-                                color: '#b71c1c',
                                 cursor: 'pointer', 
                                 fontWeight: 500,
-                                '&:hover': { textDecoration: 'underline', color: '#9a0007' } }}
+                                '&:hover': { textDecoration: 'underline'} }}
                             // onClick={() => navigate('')}
                         >
                             Forgot password?
