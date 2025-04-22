@@ -7,8 +7,12 @@ import { Select } from "../ui/select";
 
 import statistics from "../../geojson/canada_statistics.json";
 
-export function SearchAreaByPlaceComponent() {
-  const { setDemographicData, map, token} = useMapbox();
+interface SearchAreaByPlaceProps {
+  onClose?: () => void;
+}
+
+export function SearchAreaByPlaceComponent({ onClose }: SearchAreaByPlaceProps) {
+  const { setDemographicData, map, token, setSearchByRadius, setCurrentCirclePlace } = useMapbox();
 
   const [province, setProvince] = useState("");
   const [searchName, setSearchName] = useState("");
@@ -60,6 +64,8 @@ export function SearchAreaByPlaceComponent() {
       console.log(data);
       if (data.features && data.features.length > 0) {
         const [lng, lat] = data.features[0].center;
+        setCurrentCirclePlace([lng, lat]);
+        setSearchByRadius(true);
 
         if (map) {
           map.flyTo({
@@ -68,6 +74,7 @@ export function SearchAreaByPlaceComponent() {
             essential: true
           });
         }
+        onClose?.();
       } else {
         alert("Endereço não encontrado.");
       }
@@ -77,6 +84,10 @@ export function SearchAreaByPlaceComponent() {
   };
   function handleSearchProvince() {
     searchAddress(searchName);
+    async function handleSearchProvince() {
+      await searchAddress(searchName);
+    }
+
   }
 
   function handleMetrics(data: any) {
@@ -151,34 +162,34 @@ export function SearchAreaByPlaceComponent() {
 
   return (
     <div className="flex flex-col gap-2 w-full max-w">
-        <SearchInput value={searchName} className="mb-2" onChange={e => handleChange(e)} />
-        {suggestions.length > 0 && (
-            <ul className="bg-white border rounded shadow text-sm">
-            {suggestions.map(suggestion => (
-                <li
-                key={suggestion.id}
-                className="p-2 hover:bg-blue-100 cursor-pointer"
-                onClick={() => {
-                    setSearchName(suggestion.place_name);
-                    setSuggestions([]);
-                    searchAddress(suggestion.place_name);
-                }}
-                >
-                {suggestion.place_name}
-                </li>
-            ))}
-            </ul>
-        )}
+      <SearchInput value={searchName} className="mb-2" onChange={e => handleChange(e)} />
+      {suggestions.length > 0 && (
+        <ul className="bg-white border rounded shadow text-sm">
+          {suggestions.map(suggestion => (
+            <li
+              key={suggestion.id}
+              className="p-2 hover:bg-blue-100 cursor-pointer"
+              onClick={() => {
+                setSearchName(suggestion.place_name);
+                setSuggestions([]);
+                searchAddress(suggestion.place_name);
+              }}
+            >
+              {suggestion.place_name}
+            </li>
+          ))}
+        </ul>
+      )}
 
-        <Select
-            label="Select Province"
-            value={province}
-            onChange={handleProvinceChange}
-            options={provinceOptions}
-        />
-        <Button variant="search" onClick={e => handleSearchProvince()}>
-            Search
-        </Button>
+      <Select
+        label="Select Province"
+        value={province}
+        onChange={handleProvinceChange}
+        options={provinceOptions}
+      />
+      <Button variant="search" onClick={e => handleSearchProvince()}>
+        Search
+      </Button>
     </div>
   );
 }
