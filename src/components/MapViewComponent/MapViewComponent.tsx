@@ -28,12 +28,13 @@ export function MapViewComponent() {
     searchByRadius,
     setSearchByRadius, 
     radius,
-    setRadius
-   } = useMapbox();
+    setRadius,
+    currentCirclePlace,
+    setCurrentCirclePlace   
+  } = useMapbox();
 
   const [specialty, setSpeciality] = useState("Specialty");
   const [openInsightsModal, setOpenInsightsModal] = useState(false);
-  const [currentCirclePlace, setCurrentCirclePlace] = useState<[number, number] | null>(null);
   const [openSearchAreaByPlaceModal, setOpenSearchAreaByPlaceModal] = useState(false);
   const [openSearchAreaByRadiusModal, setOpenSearchAreaByRadiusModal] = useState(false);
   mapboxgl.accessToken = token;
@@ -166,60 +167,98 @@ export function MapViewComponent() {
   // Create Radius Search
   useEffect(() => {
     const mapInstance = mapRef.current;
-
     if (!mapInstance) return;
   
-    if (!searchByRadius && mapInstance.getSource("circle")) {
-      mapInstance.removeLayer("circle-layer");
-      mapInstance.removeSource("circle");
+    // Remove círculo se desativar o modo de raio
+    if (!searchByRadius) {
+      if (mapInstance.getSource("circle")) {
+        mapInstance.removeLayer("circle-layer");
+        mapInstance.removeSource("circle");
+      }
       return;
-    };
-
-    if (searchByRadius) {
-      mapInstance.on("click", e => {
-        const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
-    setCurrentCirclePlace(center);
-
-    // Cria um círculo (buffer) em torno do ponto clicado
-    const circle = turf.circle(center, radius, {
-      steps: 64,
-      units: "meters"
-    });
-
-    // Atualiza ou adiciona a layer do círculo
-    if (mapInstance.getSource("circle")) {
-      (mapInstance?.getSource("circle") as mapboxgl.GeoJSONSource)?.setData(
-        circle
-      );
-    } else {
-      mapInstance.addSource("circle", {
-        type: "geojson",
-        data: circle
-      });
-
-      mapInstance.addLayer({
-        id: "circle-layer",
-        type: "fill",
-        source: "circle",
-        paint: {
-          "fill-color": "#ff0000",
-          "fill-opacity": 0.2
-        }
-      });
     }
-
-    const points = turf.points(jsonPoints.points);
-
+  
+    // Se já existe um ponto, desenha o círculo automaticamente
+    if (searchByRadius && currentCirclePlace) {
+      const center = currentCirclePlace;
+  
+      const circle = turf.circle(center, radius, {
+        steps: 64,
+        units: "meters"
+      });
+      // Atualiza ou adiciona a layer do círculo
+      if (mapInstance.getSource("circle")) {
+        (mapInstance?.getSource("circle") as mapboxgl.GeoJSONSource)?.setData(
+          circle
+        );
+      } else {
+        mapInstance.addSource("circle", {
+          type: "geojson",
+          data: circle
+        });
+  
+        mapInstance.addLayer({
+          id: "circle-layer",
+          type: "fill",
+          source: "circle",
+          paint: {
+            "fill-color": "#ff0000",
+            "fill-opacity": 0.2
+          }
+        });
+      }
+  
+      const points = turf.points(jsonPoints.points);
+      
     // Filtra pontos dentro do raio
-    const pointsWithin = turf.pointsWithinPolygon(points, circle);
-
-    // Atualiza os pontos no mapa com os que estão dentro do raio
-    (
-      mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource
-    )?.setData(pointsWithin);
-      });   
+      const pointsWithin = turf.pointsWithinPolygon(points, circle);
+  
+      (mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource)?.setData(pointsWithin);
     }
-  }, [searchByRadius, radius]);
+    // Atualiza os pontos no mapa com os que estão dentro do raio  
+    const handleClick = (e: mapboxgl.MapMouseEvent & mapboxgl.EventData) => {
+      const center: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+      setCurrentCirclePlace(center);
+  
+      const circle = turf.circle(center, radius, {
+        steps: 100,
+        units: "meters"
+      });
+  
+      if (mapInstance.getSource("circle")) {
+        (mapInstance.getSource("circle") as mapboxgl.GeoJSONSource).setData(circle);
+      } else {
+        mapInstance.addSource("circle", {
+          type: "geojson",
+          data: circle
+        });
+  
+        mapInstance.addLayer({
+          id: "circle-layer",
+          type: "fill",
+          source: "circle",
+          paint: {
+            "fill-color": "#ff0000",
+            "fill-opacity": 0.2
+          }
+        });
+      }
+  
+      const points = turf.points(jsonPoints.points);
+      const pointsWithin = turf.pointsWithinPolygon(points, circle);
+  
+      (
+        mapInstance.getSource("my-geojson") as mapboxgl.GeoJSONSource
+      )?.setData(pointsWithin);
+    };
+  
+    mapInstance.on("click", handleClick);
+  
+    return () => {
+      mapInstance.off("click", handleClick);
+    }
+  }, [searchByRadius, radius, currentCirclePlace]);
+  
 
   // Update circle when radius changes
   useEffect(() => {
@@ -364,7 +403,8 @@ export function MapViewComponent() {
           <CustomModal 
               open={openSearchAreaByPlaceModal} 
               handleClose={() => setOpenSearchAreaByPlaceModal(false)} 
-              child={<SearchAreaByPlaceComponent />} />
+              child={<SearchAreaByPlaceComponent 
+                onClose={() => setOpenSearchAreaByPlaceModal(false)}/>} />
       )}
 
       <div style={{position: "relative", height: "80vh",transform: 'translateZ(0px)', flexGrow: 1, backgroundColor: "red"}}>

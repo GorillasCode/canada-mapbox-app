@@ -14,6 +14,8 @@ interface MapboxContextType {
   setSearchByRadius: (searchByRadius: boolean) => void;
   radius: number;
   setRadius: (radius: number) => void;
+  currentCirclePlace: [number, number] | null;
+  setCurrentCirclePlace: (value: [number, number] | null) => void;
 }
 
 export interface DemographicData {
@@ -56,9 +58,10 @@ export const MapboxProvider = ({ children }: { children: ReactNode }) => {
   const tilesetId = process.env.REACT_APP_MAPBOX_TILESETID!
   const [searchByRadius, setSearchByRadius] = useState(false);
   const [radius, setRadius] = useState(5000);
+  const [currentCirclePlace, setCurrentCirclePlace] = useState<[number, number] | null>(null);
 
   return (
-    <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId, searchByRadius, setSearchByRadius, radius, setRadius }}>
+    <MapboxContext.Provider value={{ map, setMap, center, setCenter, token, demographicData, setDemographicData, tilesetId, searchByRadius, setSearchByRadius, radius, setRadius, currentCirclePlace, setCurrentCirclePlace }}>
       {children}
     </MapboxContext.Provider>
   );
