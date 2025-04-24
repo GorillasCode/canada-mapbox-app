@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';
+import axios from 'axios';
 
 const Header = styled(Box)(({ theme }) => ({
     textAlign: 'center',
@@ -30,6 +31,7 @@ const RegisterPage = () => {
     const [showError, setShowError] = useState(false);
     const [emailError, setEmailError] = useState(false);
     const [emailHelperText, setEmailHelperText] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const validateEmail = (value: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,7 +46,7 @@ const RegisterPage = () => {
         }
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         const isEmailValid = validateEmail(email);
         const isPasswordMatch = password === confirmPassword;
 
@@ -61,11 +63,40 @@ const RegisterPage = () => {
             return;
         }
 
-        setShowSuccess(true);
-        setTimeout(() => {
-            navigate('/');
-        }, 2000);
+        setLoading(true);
+
+        try {
+            const response = await axios.post('http://localhost:3001/api/register', {
+                fullName: name,
+                username: email,
+                password,
+            });
+
+            localStorage.setItem("token", response.data.accessToken);
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                navigate("/app");
+            }, 2000);
+        } catch (error: any) {
+            setShowError(true);
+            const backendMessage = error.response?.data?.error;
+
+            if (backendMessage === "Conflict.") {
+                setEmailError(true);
+                setEmailHelperText("Email is already registered.");
+            } else if (typeof backendMessage === "object") {
+                setEmailError(true);
+                setEmailHelperText("Invalid fields.");
+            } else {
+                setEmailHelperText(backendMessage || "Registration failed.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
+
+
 
     return (
         <Container maxWidth="sm">
@@ -151,6 +182,7 @@ const RegisterPage = () => {
                         size="large"
                         fullWidth
                         onClick={handleRegister}
+                        disabled={loading}
                         sx={{
                             borderRadius: 2,
                             padding: 1.5,
@@ -164,7 +196,7 @@ const RegisterPage = () => {
                             },
                         }}
                     >
-                        Sign up
+                        {loading ? 'Registering...' : 'Sign up'}
                     </Button>
                     <Box display="flex" justifyContent="center" mt={2}>
                         <Typography
@@ -201,7 +233,7 @@ const RegisterPage = () => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
                 <Alert severity="error" variant="filled">
-                    Please fill all fields correctly.
+                    Something went wrong. Please check your information and try again.
                 </Alert>
             </Snackbar>
         </Container>
