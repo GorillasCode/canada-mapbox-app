@@ -6,7 +6,7 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps): ReactElement => {
-  const isAuthenticated = !!localStorage.getItem("token");
+  const isAuthenticated = !!localStorage.getItem("accessToken");
 
   return isAuthenticated ? children : <Navigate to="/" />;
 };
