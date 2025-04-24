@@ -28,6 +28,7 @@ const LoginPage = () => {
 
     const handleLogin = () => {
         if (email === 'admin@mapbox.com' && password === '123456') {
+            localStorage.setItem("token", "fake-jwt-token");
             setShowSuccess(true);
             setTimeout(() => {
                 navigate('/app');
