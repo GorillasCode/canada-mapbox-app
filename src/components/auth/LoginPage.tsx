@@ -28,7 +28,7 @@ const LoginPage = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch('http://localhost:3001/api/login', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL_BASE}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -49,7 +49,6 @@ const LoginPage = () => {
                 navigate('/app');
             }, 1500);
         } catch (error) {
-            console.error('Login error:', error);
             setShowError(true);
         }
     };
