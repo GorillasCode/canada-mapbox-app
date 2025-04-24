@@ -26,14 +26,29 @@ const LoginPage = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
 
-    const handleLogin = () => {
-        if (email === 'admin@mapbox.com' && password === '123456') {
-            localStorage.setItem("token", "fake-jwt-token");
+    const handleLogin = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL_BASE}/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: email, password }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Login failed');
+            }
+    
+            const data = await response.json();
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+    
             setShowSuccess(true);
             setTimeout(() => {
                 navigate('/app');
             }, 1500);
-        } else {
+        } catch (error) {
             setShowError(true);
         }
     };
