@@ -66,31 +66,47 @@ const RegisterPage = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('http://localhost:3001/api/register', {
-                fullName: name,
-                username: email,
-                password,
+            const response = await fetch(`${process.env.REACT_APP_API_URL_BASE}/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    fullName: name,
+                    username: email,
+                    password,
+                }),
             });
 
-            localStorage.setItem("token", response.data.accessToken);
+            const data = await response.json();
+
+            if (!response.ok) {
+                const backendMessage = data?.error;
+
+                if (backendMessage === "Conflict.") {
+                    setEmailError(true);
+                    setEmailHelperText("Email is already registered.");
+                } else if (typeof backendMessage === "object") {
+                    setEmailError(true);
+                    setEmailHelperText("Invalid fields.");
+                } else {
+                    setEmailHelperText(backendMessage || "Registration failed.");
+                }
+
+                setShowError(true);
+                return;
+            }
+
+            localStorage.setItem("token", data.accessToken);
             setShowSuccess(true);
 
             setTimeout(() => {
-                navigate("/app");
-            }, 2000);
-        } catch (error: any) {
+                navigate("/lnpm start");
+            }, 1500);
+        } catch (error) {
+            console.error(error);
             setShowError(true);
-            const backendMessage = error.response?.data?.error;
-
-            if (backendMessage === "Conflict.") {
-                setEmailError(true);
-                setEmailHelperText("Email is already registered.");
-            } else if (typeof backendMessage === "object") {
-                setEmailError(true);
-                setEmailHelperText("Invalid fields.");
-            } else {
-                setEmailHelperText(backendMessage || "Registration failed.");
-            }
+            setEmailHelperText("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
