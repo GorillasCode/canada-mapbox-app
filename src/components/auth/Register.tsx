@@ -11,7 +11,6 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';
-import axios from 'axios';
 
 const Header = styled(Box)(({ theme }) => ({
     textAlign: 'center',
