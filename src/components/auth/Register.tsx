@@ -30,6 +30,7 @@ const RegisterPage = () => {
     const [showError, setShowError] = useState(false);
     const [emailError, setEmailError] = useState(false);
     const [emailHelperText, setEmailHelperText] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const validateEmail = (value: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -44,7 +45,7 @@ const RegisterPage = () => {
         }
     };
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         const isEmailValid = validateEmail(email);
         const isPasswordMatch = password === confirmPassword;
 
@@ -61,11 +62,56 @@ const RegisterPage = () => {
             return;
         }
 
-        setShowSuccess(true);
-        setTimeout(() => {
-            navigate('/');
-        }, 2000);
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL_BASE}/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    fullName: name,
+                    username: email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const backendMessage = data?.error;
+
+                if (backendMessage === "Conflict.") {
+                    setEmailError(true);
+                    setEmailHelperText("Email is already registered.");
+                } else if (typeof backendMessage === "object") {
+                    setEmailError(true);
+                    setEmailHelperText("Invalid fields.");
+                } else {
+                    setEmailHelperText(backendMessage || "Registration failed.");
+                }
+
+                setShowError(true);
+                return;
+            }
+
+            localStorage.setItem("token", data.accessToken);
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                navigate("/lnpm start");
+            }, 1500);
+        } catch (error) {
+            console.error(error);
+            setShowError(true);
+            setEmailHelperText("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
+
+
 
     return (
         <Container maxWidth="sm">
@@ -151,6 +197,7 @@ const RegisterPage = () => {
                         size="large"
                         fullWidth
                         onClick={handleRegister}
+                        disabled={loading}
                         sx={{
                             borderRadius: 2,
                             padding: 1.5,
@@ -164,7 +211,7 @@ const RegisterPage = () => {
                             },
                         }}
                     >
-                        Sign up
+                        {loading ? 'Registering...' : 'Sign up'}
                     </Button>
                     <Box display="flex" justifyContent="center" mt={2}>
                         <Typography
@@ -201,7 +248,7 @@ const RegisterPage = () => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
                 <Alert severity="error" variant="filled">
-                    Please fill all fields correctly.
+                    Something went wrong. Please check your information and try again.
                 </Alert>
             </Snackbar>
         </Container>
